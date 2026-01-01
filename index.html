@@ -219,3 +219,1118 @@
 
     <!-- Konten Utama -->
     <div class="main-content" id="mainContent">
+            <!-- Dashboard Home -->
+      <div id="home" class="glass">
+        <h2 class="accent-emerald mb-4">Selamat Datang di Dashboard Ma'had Aly</h2>
+        <p class="fs-5">Anda login sebagai <strong id="welcomeRole" class="accent-emerald"></strong></p>
+        <hr style="border-color: rgba(16, 185, 129, 0.4);">
+        <div class="row text-center mt-4">
+          <div class="col-md-6 mb-4">
+            <div class="glass p-4 text-center">
+              <h4 class="text-emerald">Total Mahasantri</h4>
+              <h2 class="accent-emerald fw-bold" id="totalSantri">0</h2>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="glass p-4 text-center">
+              <h4 class="text-emerald">Total Dosen</h4>
+              <h2 class="accent-emerald fw-bold" id="totalDosen">0</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Absensi -->
+      <div id="absensi" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Absensi</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenu('absensiMahasantri')">Absensi Mahasantri</button>
+          <button class="btn btn-emerald" onclick="showSubMenu('absensiDosen')">Absensi Dosen</button>
+        </div>
+
+        <!-- Absensi Mahasantri -->
+        <div id="absensiMahasantri" style="display:none;">
+          <form id="formAbsenM">
+            <div class="mb-3">
+              <select id="kelasM" class="form-select" required>
+                <option>Pilih Kelas</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="mataKuliahM" class="form-select" required>
+                <option>Pilih Mata Kuliah</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="statusM" class="form-select" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Izin">Izin</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Alpha">Alpha</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="date" id="tanggalM" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <input type="text" id="rfidM" class="form-control" placeholder="Scan/Ketik RFID (10 digit) lalu Enter" onkeypress="if(event.key === 'Enter') processAbsensi('mahasantri', event)">
+            </div>
+          </form>
+
+          <h4 class="mt-4 text-emerald">Daftar Absen Hari Ini</h4>
+          <table id="tableAbsenM" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAbsenM"></tbody>
+          </table>
+        </div>
+
+        <!-- Absensi Dosen -->
+        <div id="absensiDosen" style="display:none;">
+          <form id="formAbsenD">
+            <div class="mb-3">
+              <select id="namaD" class="form-select" required>
+                <option>Pilih Nama Dosen</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="mataKuliahD" class="form-select" required>
+                <option>Pilih Mata Kuliah</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="statusD" class="form-select" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Izin">Izin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="date" id="tanggalD" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <select id="bulanHijriD" class="form-select" required>
+                <option>Pilih Bulan Hijriah</option>
+                <option>Muharram</option><option>Safar</option><option>Rabiul Awal</option><option>Rabiul Akhir</option>
+                <option>Jumadil Awal</option><option>Jumadil Akhir</option><option>Rajab</option><option>Syaban</option>
+                <option>Ramadhan</option><option>Syawal</option><option>Dzulqaidah</option><option>Dzulhijjah</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="tahunHijriD" class="form-select" required>
+                <option>Pilih Tahun Hijriah</option>
+                <option>1445</option><option>1446</option><option>1447</option><option>1448</option><option>1449</option><option>1450</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="text" id="rfidD" class="form-control" placeholder="Scan/Ketik RFID (10 digit) lalu Enter" onkeypress="if(event.key === 'Enter') processAbsensi('dosen', event)">
+            </div>
+          </form>
+
+          <h4 class="mt-4 text-emerald">Daftar Absen Hari Ini</h4>
+          <table id="tableAbsenD" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAbsenD"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rekap -->
+      <div id="rekap" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Rekap Kehadiran</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenu('rekapMahasantri')">Rekap Mahasantri</button>
+          <button class="btn btn-emerald" onclick="showSubMenu('rekapDosen')">Rekap Dosen</button>
+        </div>
+
+        <div id="rekapMahasantri" style="display:none;">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <input type="text" id="searchRekapM" class="form-control" placeholder="Cari nama mahasantri...">
+            </div>
+            <div class="col-md-3">
+              <select id="filterKelasRekapM" class="form-select"><option value="">Semua Kelas</option></select>
+            </div>
+            <div class="col-md-3">
+              <select id="filterMKRekapM" class="form-select"><option value="">Semua Mata Kuliah</option></select>
+            </div>
+            <div class="col-md-2">
+              <select id="filterStatusRekapM" class="form-select"><option value="">Semua Status</option>
+                <option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alpha</option>
+              </select>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-emerald" onclick="exportRekap('mahasantri', 'excel')">Export Excel</button>
+            <button class="btn btn-emerald" onclick="exportRekap('mahasantri', 'pdf')">Export PDF</button>
+          </div>
+          <table id="tableRekapM" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div id="rekapDosen" style="display:none;">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <input type="text" id="searchRekapD" class="form-control" placeholder="Cari nama dosen...">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-emerald" onclick="exportRekap('dosen', 'excel')">Export Excel</button>
+            <button class="btn btn-emerald" onclick="exportRekap('dosen', 'pdf')">Export PDF</button>
+          </div>
+          <table id="tableRekapD" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Bulan Hijri</th>
+                <th>Tahun Hijri</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Keuangan -->
+      <div id="keuangan" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Keuangan</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenuKeuangan('bisyarah')">Bisyarah Dosen</button>
+          <button class="btn btn-emerald" onclick="showSubMenuKeuangan('cicilan')">Pembayaran Mahasantri</button>
+        </div>
+
+        <div id="bisyarah" style="display:block;">
+          <div class="row mb-4 align-items-end">
+            <div class="col-md-3">
+              <label class="text-emerald">Bulan Hijriah</label>
+              <select id="bulanBisyarah" class="form-select">
+                <option value="">Pilih Bulan</option>
+                <option>Muharram</option><option>Safar</option><option>Rabiul Awal</option><option>Rabiul Akhir</option>
+                <option>Jumadil Awal</option><option>Jumadil Akhir</option><option>Rajab</option><option>Syaban</option>
+                <option>Ramadhan</option><option>Syawal</option><option>Dzulqaidah</option><option>Dzulhijjah</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="text-emerald">Tahun Hijriah</label>
+              <select id="tahunBisyarah" class="form-select">
+                <option value="">Pilih Tahun</option>
+                <option>1445</option><option>1446</option><option>1447</option><option>1448</option><option>1449</option><option>1450</option>
+              </select>
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-emerald me-2" onclick="exportBisyarah('excel')">Export Excel</button>
+              <button class="btn btn-emerald" onclick="exportBisyarah('pdf')">Export PDF</button>
+            </div>
+          </div>
+
+          <div class="row mb-4" id="globalNominalSection" style="display:none;">
+            <div class="col-md-4">
+              <label class="text-emerald fw-bold">Nominal per Hadir (Global untuk semua dosen)</label>
+              <input type="number" id="globalNominalHadir" class="form-control" value="100000" onblur="updateGlobalNominal()">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama Dosen</th>
+                  <th>Jumlah Hadir</th>
+                  <th>Bisyarah dari Hadir</th>
+                  <th>Tambahan (Admin)</th>
+                  <th>Total Bisyarah</th>
+                  <th>Status</th>
+                  <th>Aksi Status (Admin)</th>
+                </tr>
+              </thead>
+              <tbody id="tableBisyarah"></tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 text-end">
+            <h4 class="accent-emerald mb-2">Total Harus Dibayar: <span id="totalHarusDibayar">Rp 0</span></h4>
+            <h4 class="accent-emerald mb-2 text-success">Total Terbayar: <span id="totalTerbayar">Rp 0</span></h4>
+            <h4 class="accent-emerald text-danger">Total Belum Terbayar: <span id="totalBelumTerbayar">Rp 0</span></h4>
+          </div>
+        </div>
+
+        <div id="cicilan" style="display:none;">
+          <h3 class="accent-emerald mb-4">Pembayaran Mahasantri - Cicilan Semester</h3>
+          <div class="row mb-4 align-items-end">
+            <div class="col-md-4">
+              <label class="text-emerald fw-bold">Tagihan Semester Saat Ini (Global)</label>
+              <input type="number" id="globalTagihanSemester" class="form-control" value="3000000" onblur="updateGlobalTagihan()">
+            </div>
+            <div class="col-md-4">
+              <label class="text-emerald">Cari Mahasantri</label>
+              <input type="text" id="searchMahasantri" class="form-control" placeholder="Nama, NIM, atau Kelas...">
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-emerald" onclick="exportCicilan('excel')">Export Excel</button>
+              <button class="btn btn-emerald" onclick="exportCicilan('pdf')">Export PDF</button>
+            </div>
+          </div>
+
+          <div class="table-responsive-cicilan">
+            <table id="tableCicilan" class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIM</th>
+                  <th>Kelas</th>
+                  <th>Tanggungan</th>
+                  <th>Potongan</th>
+                  <th>Total Tagihan</th>
+                  <th>Cicilan 1</th>
+                  <th>Cicilan 2</th>
+                  <th>Cicilan 3</th>
+                  <th>Cicilan 4</th>
+                  <th>Cicilan 5</th>
+                  <th>Cicilan 6</th>
+                  <th>Total Bayar</th>
+                  <th>Sisa</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCicilan"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manajemen Data Master -->
+      <div id="master" class="glass" style="display:none;">
+        <h2 class="accent-emerald mb-4">Manajemen Data Master</h2>
+
+        <div class="d-flex justify-content-end mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="backupDatabase()">Backup Database (Download JSON)</button>
+          <label class="btn btn-emerald">
+            Restore Database
+            <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restoreDatabase(this.files[0])">
+          </label>
+        </div>
+
+        <ul class="nav nav-tabs mb-4">
+          <li class="nav-item">
+            <button class="nav-link active" id="tab-mahasantri-btn" onclick="showMasterTab('mahasantri')">Mahasantri</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-dosen-btn" onclick="showMasterTab('dosen')">Dosen</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-kelas-btn" onclick="showMasterTab('kelas')">Kelas</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-matkul-btn" onclick="showMasterTab('matkul')">Mata Kuliah</button>
+          </li>
+        </ul>
+
+        <!-- Tab Mahasantri -->
+        <div id="tab-mahasantri">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchMahasantriMaster" class="form-control" placeholder="Cari nama, NIM, RFID...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('mahasantri')">Download Template Excel</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importMahasantriExcel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel('mahasantri', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('mahasantri')">Tambah Mahasantri</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIM</th>
+                  <th>RFID</th>
+                  <th>Kelas</th>
+                  <th>Tanggungan</th>
+                  <th>Potongan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMahasantri"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Dosen -->
+        <div id="tab-dosen" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchDosenMaster" class="form-control" placeholder="Cari nama, NIDN, RFID...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('dosen')">Download Template Excel</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importDosenExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('dosen', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('dosen')">Tambah Dosen</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIDN</th>
+                  <th>RFID</th>
+                  <th>Tambahan Bisyarah</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyDosen"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Kelas -->
+        <div id="tab-kelas" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchKelasMaster" class="form-control" placeholder="Cari kelas...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('kelas')">Download Template Excel</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importKelasExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('kelas', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('kelas')">Tambah Kelas</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Kelas</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyKelas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Mata Kuliah -->
+        <div id="tab-matkul" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchMatkulMaster" class="form-control" placeholder="Cari mata kuliah atau kelas...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('matkul')">Download Template Excel</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importMatkulExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('matkul', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('matkul')">Tambah Mata Kuliah</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama Mata Kuliah</th>
+                  <th>Kelas</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMatkul"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <script>
+    // GANTI DENGAN URL APPS SCRIPT KAMU SENDIRI
+    const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXX/exec'; // <-- UBAH INI !!!
+
+    // === FUNGSI UNIVERSAL UNTUK GOOGLE SHEETS API ===
+    async function getData(sheetName) {
+      try {
+        const response = await fetch(`${API_URL}?sheet=${sheetName}&action=read`);
+        if (!response.ok) throw new Error('Gagal terhubung ke server');
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error getData:', error);
+        Toastify({ text: "Gagal memuat data dari Google Sheets!", background: "#ef4444" }).showToast();
+        return [];
+      }
+    }
+
+    async function addData(sheetName, rowData) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ sheet: sheetName, action: 'add', ...rowData })
+        });
+        if (!response.ok) throw new Error('Gagal menyimpan');
+        const result = await response.json();
+        if (result.status === 'success' || result.error === undefined) {
+          Toastify({ text: "Data berhasil disimpan!", background: "#10b981" }).showToast();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error('Error addData:', error);
+        Toastify({ text: "Gagal menyimpan data!", background: "#ef4444" }).showToast();
+      }
+    }
+
+    // Tombol Refresh Data (sync manual dari Google Sheets)
+    async function refreshAllData() {
+      Toastify({ text: "Memuat ulang semua data dari server...", background: "#10b981" }).showToast();
+      updateStats();
+      loadAbsensiDropdowns();
+      if (document.getElementById('absensi').style.display !== 'none') {
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+      if (document.getElementById('keuangan').style.display !== 'none') {
+        hitungBisyarah();
+        loadTableCicilan();
+      }
+      if (document.getElementById('master').style.display !== 'none') {
+        loadMasterData(currentMasterTab);
+      }
+    }
+
+    // Login
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const users = await getData('users');
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        loadDashboard(user);
+        Toastify({ text: `Selamat datang, ${username}!`, background: "#10b981" }).showToast();
+      } else {
+        Toastify({ text: "Username atau password salah!", background: "#ef4444" }).showToast();
+      }
+    };
+
+    function loadDashboard(user) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboardPage').style.display = 'block';
+      document.getElementById('userRole').textContent = user.role.toUpperCase();
+      document.getElementById('welcomeRole').textContent = user.role === 'admin' ? 'Administrator' : 'Operator';
+      if (user.role !== 'admin') document.getElementById('masterLink').style.display = 'none';
+      showMenu('home');
+      updateStats();
+      loadAbsensiDropdowns();
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      document.getElementById('dashboardPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      Toastify({ text: "Logout berhasil!", background: "#10b981" }).showToast();
+    }
+
+    function showMenu(menuId) {
+      document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+      document.getElementById(menuId).style.display = 'block';
+      if (menuId === 'absensi') {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggalM').value = today;
+        document.getElementById('tanggalD').value = today;
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+      if (menuId === 'keuangan') {
+        showSubMenuKeuangan('cicilan');
+        loadTableCicilan();
+      }
+      if (menuId === 'master') {
+        showMasterTab('mahasantri');
+      }
+    }
+
+    function showSubMenu(subId) {
+      const isAbsensi = subId.startsWith('absensi');
+      const isRekap = subId.startsWith('rekap');
+
+      if (isAbsensi) {
+        document.querySelectorAll('#absensi > div:not(.d-flex)').forEach(div => div.style.display = 'none');
+        document.getElementById(subId).style.display = 'block';
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggalM').value = today;
+        document.getElementById('tanggalD').value = today;
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+
+      if (isRekap) {
+        document.querySelectorAll('#rekap > div:not(.d-flex)').forEach(div => div.style.display = 'none');
+        document.getElementById(subId).style.display = 'block';
+        if (subId === 'rekapMahasantri') loadRekapMahasantri();
+        if (subId === 'rekapDosen') loadRekapDosen();
+      }
+    }
+
+    function showSubMenuKeuangan(subId) {
+      document.getElementById('bisyarah').style.display = subId === 'bisyarah' ? 'block' : 'none';
+      document.getElementById('cicilan').style.display = subId === 'cicilan' ? 'block' : 'none';
+      if (subId === 'bisyarah') hitungBisyarah();
+      if (subId === 'cicilan') loadTableCicilan();
+    }
+
+    // Update Stats Dashboard
+    async function updateStats() {
+      const mahasantri = await getData('mahasantri');
+      const dosen = await getData('dosen');
+      document.getElementById('totalSantri').textContent = mahasantri.length;
+      document.getElementById('totalDosen').textContent = dosen.length;
+    }
+
+    // Load Dropdown Absensi
+    async function loadAbsensiDropdowns() {
+      const kelasList = await getData('kelas');
+      const kelasSelect = document.getElementById('kelasM');
+      kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>' + kelasList.map(k => `<option>${k.kelas}</option>`).join('');
+
+      kelasSelect.onchange = async () => {
+        const selectedKelas = kelasSelect.value;
+        const mkSelect = document.getElementById('mataKuliahM');
+        if (selectedKelas) {
+          const mkList = await getData('mataKuliah');
+          const filtered = mkList.filter(m => m.kelas === selectedKelas);
+          mkSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>' + filtered.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          mkSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+
+      const dosenList = await getData('dosen');
+      const namaDSelect = document.getElementById('namaD');
+      namaDSelect.innerHTML = '<option value="">Pilih Nama Dosen</option>' + dosenList.map(d => `<option value="${d.rfid}">${d.nama}</option>`).join('');
+
+      namaDSelect.onchange = async () => {
+        const selectedRfid = namaDSelect.value;
+        const mkDSelect = document.getElementById('mataKuliahD');
+        if (selectedRfid) {
+          const mkAll = await getData('mataKuliah');
+          mkDSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>' + mkAll.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          mkDSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+    }
+
+    // Process Absensi
+    async function processAbsensi(type, event) {
+      event.preventDefault();
+      const isDosen = type === 'dosen';
+      const upper = isDosen ? 'Dosen' : 'Mahasantri';
+      const form = document.getElementById(`formAbsen${isDosen ? 'D' : 'M'}`);
+
+      if (!form.checkValidity()) {
+        Toastify({ text: "Isi semua field yang wajib!", background: "#ef4444" }).showToast();
+        document.getElementById(`rfid${isDosen ? 'D' : 'M'}`).value = '';
+        return;
+      }
+
+      if (!isDosen) {
+        const mataKuliah = document.getElementById('mataKuliahM').value;
+        if (!mataKuliah) {
+          Toastify({ text: "Mata Kuliah harus dipilih!", background: "#ef4444" }).showToast();
+          return;
+        }
+      }
+
+      const rfidInputId = `rfid${isDosen ? 'D' : 'M'}`;
+      const rfid = document.getElementById(rfidInputId).value.trim();
+
+      if (rfid.length !== 10 || isNaN(rfid)) {
+        Toastify({ text: "RFID harus 10 digit angka!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      const users = await getData(type);
+      const user = users.find(u => u.rfid === rfid);
+      if (!user) {
+        Toastify({ text: "ID RFID tidak ditemukan!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // Validasi khusus
+      if (isDosen) {
+        const selectedRfid = document.getElementById('namaD').value;
+        if (rfid !== selectedRfid) {
+          Toastify({ text: "RFID tidak sesuai dengan dosen yang dipilih!", background: "#ef4444" }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      } else {
+        const selectedKelas = document.getElementById('kelasM').value;
+        if (user.kelas !== selectedKelas) {
+          Toastify({ text: `${user.nama} bukan kelas ${selectedKelas}, seharusnya ${user.kelas}`, background: "#ef4444" }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      }
+
+      const tanggal = document.getElementById(`tanggal${isDosen ? 'D' : 'M'}`).value;
+      const mataKuliah = document.getElementById(`mataKuliah${isDosen ? 'D' : 'M'}`).value;
+
+      // Cek duplikat
+      const absensiList = await getData(`absensi${upper}`);
+      const existing = absensiList.find(a => a.nama === user.nama && a.tanggal === tanggal && a.mataKuliah === mataKuliah);
+      if (existing) {
+        Toastify({ text: "Sudah absen mata kuliah ini hari ini!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // Simpan data
+      const data = {
+        nama: user.nama,
+        mataKuliah,
+        status: document.getElementById(`status${isDosen ? 'D' : 'M'}`).value,
+        tanggal,
+        timestamp: new Date().toISOString()
+      };
+
+      if (isDosen) {
+        data.bulanHijri = document.getElementById('bulanHijriD').value;
+        data.tahunHijri = document.getElementById('tahunHijriD').value;
+      } else {
+        data.kelas = user.kelas;
+      }
+
+      await addData(`absensi${upper}`, data);
+
+      // Toast sukses
+      const tanggalDisplay = new Date(tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      Toastify({
+        text: `<strong>Telah Hadir!</strong><br>Nama: ${user.nama}<br>Mata Kuliah: ${mataKuliah}<br>Tanggal: ${tanggalDisplay}`,
+        background: "#10b981",
+        duration: 6000,
+        gravity: "top",
+        position: "center",
+        escapeMarkup: false
+      }).showToast();
+
+      document.getElementById(rfidInputId).value = '';
+      updateAbsenTable(type);
+    }
+
+    // Update Tabel Absen Harian
+    async function updateAbsenTable(type) {
+      const isDosen = type === 'dosen';
+      const upper = isDosen ? 'Dosen' : 'Mahasantri';
+      const tanggal = document.getElementById(`tanggal${isDosen ? 'D' : 'M'}`).value.trim();
+
+      const tbody = document.getElementById(`tbodyAbsen${isDosen ? 'D' : 'M'}`);
+      if (!tbody) return;
+
+      if (!tanggal) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Pilih tanggal terlebih dahulu</td></tr>';
+        return;
+      }
+
+      let data = await getData(`absensi${upper}`);
+      const mataKuliah = document.getElementById(`mataKuliah${isDosen ? 'D' : 'M'}`).value.trim();
+      if (mataKuliah) {
+        data = data.filter(item => item.tanggal === tanggal && item.mataKuliah === mataKuliah);
+      } else {
+        data = data.filter(item => item.tanggal === tanggal);
+      }
+
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada absen hari ini</td></tr>';
+        return;
+      }
+
+      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      const isAdmin = (JSON.parse(localStorage.getItem('currentUser') || '{}').role || '') === 'admin';
+
+      data.forEach(item => {
+        const waktu = new Date(item.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const aksi = isAdmin ? `<button class="btn btn-sm btn-danger" onclick="deleteAbsen('${type}', item)">Hapus</button>` : '';
+
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>${item.mataKuliah || '-'}</td>
+          <td>${item.status}</td>
+          <td>${waktu}</td>
+          <td>${aksi}</td>
+        `;
+      });
+    }
+
+    // Hapus Absen (belum diimplementasikan full karena Google Sheets tidak punya delete langsung)
+    async function deleteAbsen(type, item) {
+      if (!confirm('Yakin hapus absen ini? (fitur hapus belum aktif di versi Google Sheets)')) return;
+      // Untuk versi lengkap, perlu Apps Script dengan action 'delete'
+      Toastify({ text: "Fitur hapus belum tersedia di versi Google Sheets", background: "#ef4444" }).showToast();
+    }
+            <!-- Keuangan -->
+      <div id="keuangan" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Keuangan</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenuKeuangan('bisyarah')">Bisyarah Dosen</button>
+          <button class="btn btn-emerald" onclick="showSubMenuKeuangan('cicilan')">Pembayaran Mahasantri</button>
+        </div>
+
+        <div id="bisyarah" style="display:block;">
+          <div class="row mb-4 align-items-end">
+            <div class="col-md-3">
+              <label class="text-emerald">Bulan Hijriah</label>
+              <select id="bulanBisyarah" class="form-select">
+                <option value="">Pilih Bulan</option>
+                <option>Muharram</option><option>Safar</option><option>Rabiul Awal</option><option>Rabiul Akhir</option>
+                <option>Jumadil Awal</option><option>Jumadil Akhir</option><option>Rajab</option><option>Syaban</option>
+                <option>Ramadhan</option><option>Syawal</option><option>Dzulqaidah</option><option>Dzulhijjah</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="text-emerald">Tahun Hijriah</label>
+              <select id="tahunBisyarah" class="form-select">
+                <option value="">Pilih Tahun</option>
+                <option>1445</option><option>1446</option><option>1447</option><option>1448</option><option>1449</option><option>1450</option>
+              </select>
+            </div>
+            <div class="col-md-6 text-end">
+              <button class="btn btn-emerald me-2" onclick="exportBisyarah('excel')">Export Excel</button>
+              <button class="btn btn-emerald" onclick="exportBisyarah('pdf')">Export PDF</button>
+            </div>
+          </div>
+
+          <div class="row mb-4" id="globalNominalSection" style="display:none;">
+            <div class="col-md-4">
+              <label class="text-emerald fw-bold">Nominal per Hadir (Global)</label>
+              <input type="number" id="globalNominalHadir" class="form-control" value="100000" onblur="updateGlobalNominal()">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama Dosen</th>
+                  <th>Jumlah Hadir</th>
+                  <th>Bisyarah dari Hadir</th>
+                  <th>Tambahan</th>
+                  <th>Total Bisyarah</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableBisyarah"></tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 text-end">
+            <h4 class="accent-emerald mb-2">Total Harus Dibayar: <span id="totalHarusDibayar">Rp 0</span></h4>
+            <h4 class="accent-emerald mb-2 text-success">Total Terbayar: <span id="totalTerbayar">Rp 0</span></h4>
+            <h4 class="accent-emerald text-danger">Total Belum Terbayar: <span id="totalBelumTerbayar">Rp 0</span></h4>
+          </div>
+        </div>
+
+        <!-- Pembayaran Mahasantri -->
+        <div id="cicilan" style="display:none;">
+          <h3 class="accent-emerald mb-4">Pembayaran Mahasantri - Cicilan Semester</h3>
+          <div class="row mb-4 align-items-end">
+            <div class="col-md-4">
+              <label class="text-emerald fw-bold">Tagihan Semester Saat Ini (Global)</label>
+              <input type="number" id="globalTagihanSemester" class="form-control" value="3000000" onblur="updateGlobalTagihan()">
+            </div>
+            <div class="col-md-4">
+              <label class="text-emerald">Cari Mahasantri</label>
+              <input type="text" id="searchMahasantri" class="form-control" placeholder="Nama, NIM, atau Kelas...">
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-emerald" onclick="exportCicilan('excel')">Export Excel</button>
+              <button class="btn btn-emerald" onclick="exportCicilan('pdf')">Export PDF</button>
+            </div>
+          </div>
+
+          <div class="table-responsive-cicilan">
+            <table id="tableCicilan" class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIM</th>
+                  <th>Kelas</th>
+                  <th>Tanggungan</th>
+                  <th>Potongan</th>
+                  <th>Total Tagihan</th>
+                  <th>Cicilan 1</th>
+                  <th>Cicilan 2</th>
+                  <th>Cicilan 3</th>
+                  <th>Cicilan 4</th>
+                  <th>Cicilan 5</th>
+                  <th>Cicilan 6</th>
+                  <th>Total Bayar</th>
+                  <th>Sisa</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyCicilan"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manajemen Data Master -->
+      <div id="master" class="glass" style="display:none;">
+        <h2 class="accent-emerald mb-4">Manajemen Data Master</h2>
+
+        <div class="d-flex justify-content-end mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="backupDatabase()">Backup Database (Download JSON)</button>
+          <label class="btn btn-emerald">
+            Restore Database
+            <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restoreDatabase(this.files[0])">
+          </label>
+        </div>
+
+        <ul class="nav nav-tabs mb-4">
+          <li class="nav-item">
+            <button class="nav-link active" id="tab-mahasantri-btn" onclick="showMasterTab('mahasantri')">Mahasantri</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-dosen-btn" onclick="showMasterTab('dosen')">Dosen</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-kelas-btn" onclick="showMasterTab('kelas')">Kelas</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" id="tab-matkul-btn" onclick="showMasterTab('matkul')">Mata Kuliah</button>
+          </li>
+        </ul>
+
+        <!-- Tab Mahasantri -->
+        <div id="tab-mahasantri">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchMahasantriMaster" class="form-control" placeholder="Cari nama, NIM, RFID...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('mahasantri')">Download Template</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importMahasantriExcel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel('mahasantri', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('mahasantri')">Tambah Mahasantri</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIM</th>
+                  <th>RFID</th>
+                  <th>Kelas</th>
+                  <th>Tanggungan</th>
+                  <th>Potongan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMahasantri"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Dosen -->
+        <div id="tab-dosen" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchDosenMaster" class="form-control" placeholder="Cari nama, NIDN, RFID...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('dosen')">Download Template</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importDosenExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('dosen', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('dosen')">Tambah Dosen</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>NIDN</th>
+                  <th>RFID</th>
+                  <th>Tambahan Bisyarah</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyDosen"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Kelas -->
+        <div id="tab-kelas" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchKelasMaster" class="form-control" placeholder="Cari kelas...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('kelas')">Download Template</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importKelasExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('kelas', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('kelas')">Tambah Kelas</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Kelas</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyKelas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab Mata Kuliah -->
+        <div id="tab-matkul" style="display:none;">
+          <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchMatkulMaster" class="form-control" placeholder="Cari mata kuliah atau kelas...">
+            <div>
+              <button class="btn btn-emerald me-2" onclick="downloadTemplate('matkul')">Download Template</button>
+              <label class="btn btn-emerald me-2">
+                Import Excel
+                <input type="file" id="importMatkulExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('matkul', this.files[0])">
+              </label>
+              <button class="btn btn-emerald" onclick="openModalAdd('matkul')">Tambah Mata Kuliah</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Nama Mata Kuliah</th>
+                  <th>Kelas</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMatkul"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bayar Cicilan -->
+  <div class="modal fade" id="modalBayar" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content glass border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title accent-emerald">Input Pembayaran Cicilan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Mahasantri:</strong> <span id="modalNama"></span></p>
+          <div class="mb-3">
+            <label>Cicilan Ke-</label>
+            <select id="modalCicilanKe" class="form-select">
+              <option value="1">Cicilan 1</option>
+              <option value="2">Cicilan 2</option>
+              <option value="3">Cicilan 3</option>
+              <option value="4">Cicilan 4</option>
+              <option value="5">Cicilan 5</option>
+              <option value="6">Cicilan 6</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Jumlah Bayar</label>
+            <input type="number" id="modalJumlah" class="form-control" placeholder="Contoh: 500000">
+          </div>
+          <div class="mb-3">
+            <label>Tanggal Bayar</label>
+            <input type="date" id="modalTanggal" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label>Keterangan (opsional)</label>
+            <input type="text" id="modalKeterangan" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-emerald" onclick="simpanCicilan()">Simpan & Cetak Kuitansi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah/Edit Master Data -->
+  <div class="modal fade" id="modalMaster" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content glass border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title accent-emerald" id="modalMasterTitle">Tambah Data</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalMasterBody">
+          <!-- Form akan diisi oleh JavaScript -->
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-emerald" id="btnSimpanMaster">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Hapus -->
+  <div class="modal fade" id="modalConfirmHapus" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content glass border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title accent-emerald">Konfirmasi Hapus</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-4">Yakin ingin menghapus data ini?</p>
+          <button type="button" class="btn btn-danger me-2" id="btnYaHapus">Ya, Hapus</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+      
