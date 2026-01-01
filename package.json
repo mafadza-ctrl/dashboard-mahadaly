@@ -1,0 +1,13 @@
+{
+  "name": "mahad-aly-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard Ma'had Aly Offline Portable",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "open": "^10.0.3"
+  }
+}

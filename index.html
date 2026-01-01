@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Ma'had Aly - Offline Portable</title>
+  <link href="lib/bootstrap.min.css" rel="stylesheet">
+  <link href="lib/toastify.css" rel="stylesheet">
+  <script src="lib/bootstrap.bundle.min.js"></script>
+  <script src="lib/dexie.min.js"></script>
+  <script src="lib/toastify.min.js"></script>
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script src="lib/jspdf.plugin.autotable.min.js"></script>
+  <script src="lib/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+  /* Tema Hijau Zamrud Glassmorphism — Versi Elegan & Profesional 2025 */
+  body {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    color: #e6fdf5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .glass {
+    background: rgba(20, 184, 136, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .glass:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Sidebar — Ramping & Modern */
+  .sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 240px;
+  background: rgba(5, 70, 55, 0.88); /* Sedikit lebih transparan untuk glass effect */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+  z-index: 1000;
+  padding-top: 30px;
+  border-right: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 6px 0 25px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar.collapsed {
+  width: 78px;
+  background: rgba(5, 70, 55, 0.95); /* Saat collapse, sedikit lebih padat agar icon terlihat jelas */
+}
+
+/* Pusatkan ikon secara horizontal saat collapsed */
+.sidebar.collapsed .menu-item {
+  justify-content: center; /* Ikon tepat di tengah */
+  padding: 16px 0; /* Hilangkan padding kiri/kanan */
+}
+
+/* Pastikan icon tetap terpusat */
+.sidebar.collapsed .menu-icon {
+  margin: 0 auto;
+  min-width: auto;
+}
+
+/* Hilangkan margin text (karena sudah hidden) */
+.sidebar.collapsed .menu-text {
+  display: none; /* lebih aman daripada opacity 0 */
+}
+
+/* Tombol toggle tetap di posisi bagus */
+.sidebar.collapsed .btn-light.rounded-circle {
+  margin-left: 12px;
+}
+
+/* Efek hover menu item lebih halus */
+.sidebar .menu-item {
+  padding: 16px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  border-radius: 0 12px 12px 0;
+  margin: 4px 12px;
+}
+
+.sidebar .menu-item:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-left-color: #10b981;
+  transform: translateX(8px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.sidebar .menu-item.active {
+  background: rgba(16, 185, 129, 0.4);
+  border-left-color: #10b981;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+}
+
+/* Icon & Text lebih halus */
+.sidebar .menu-icon {
+  font-size: 24px;
+  min-width: 45px;
+  text-align: center;
+  color: #d1fae5;
+  transition: color 0.3s ease;
+}
+
+.sidebar .menu-item:hover .menu-icon,
+.sidebar .menu-item.active .menu-icon {
+  color: #ffffff;
+}
+
+.sidebar .menu-text {
+  font-size: 16px;
+  margin-left: 16px;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #e6fdf5;
+}
+
+.sidebar.collapsed .menu-text { 
+  opacity: 0; 
+  pointer-events: none; 
+}
+
+/* Tombol toggle sidebar lebih elegan */
+.sidebar .btn-light.rounded-circle {
+  background: rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar .btn-light.rounded-circle:hover {
+  background: rgba(16, 185, 129, 0.5);
+  transform: scale(1.1);
+}
+
+  /* Accent Colors */
+  .accent-emerald { color: #10b981; font-weight: 600; }
+  .text-emerald { color: #6ee7b7; }
+
+  /* Button Emerald — Refined */
+  .btn-emerald {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+    color: #000;
+  }
+
+  .btn-emerald:hover {
+    background: linear-gradient(135deg, #059669, #10b981);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Main Content — Centered & Comfortable */
+  .main-content {
+    margin-left: 240px;
+    padding: 40px;
+    padding-left: 100px;
+    padding-right: 50;
+    max-width: 1600px;
+    margin: 0 auto;
+    transition: margin-left 0.4s ease;
+  }
+
+  /* TOASTIFY CUSTOM - VERSI STABIL & CANTIK (TANPA GAGAL) */
+.Toastify__toast-container {
+  width: 380px;
+  padding: 8px;
+  z-index: 9999;
+}
+
+.Toastify__toast {
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  padding: 18px 24px;
+  min-height: 70px;
+  margin-bottom: 16px;
+}
+
+.Toastify__toast--success {
+  background: rgba(16, 185, 129, 0.95);
+  color: #000;
+}
+
+.Toastify__toast--error {
+  background: rgba(239, 68, 68, 0.95);
+  color: #fff;
+}
+
+.Toastify__toast--info,
+.Toastify__toast--warning {
+  background: rgba(251, 191, 36, 0.95);
+  color: #000;
+}
+
+.Toastify__toast-body {
+  font-size: 16px;
+  margin: 0;
+}
+
+.Toastify__close-button {
+  color: inherit;
+  opacity: 0.8;
+  font-size: 22px;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+
+.Toastify__progress-bar {
+  height: 5px;
+  border-radius: 0 0 16px 16px;
+}
+
+.Toastify__progress-bar--success,
+.Toastify__progress-bar--info,
+.Toastify__progress-bar--warning {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.Toastify__progress-bar--error {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+  /* Input & Select — Soft */
+  input, select, textarea {
+    background: rgba(6, 78, 59, 0.7);
+    color: #d1fae5;
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+    font-size: 15px;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+
+  input::placeholder { color: #86efac; opacity: 0.8; }
+
+  /* Table — Clean & Elegant */
+  .table {
+    background: rgba(6, 78, 59, 0.5);
+    color: #e6fdf5;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .table th {
+    background: rgba(16, 185, 129, 0.4);
+    color: #ecfdf5;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    padding: 16px 12px;
+  }
+
+  .table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .table tbody tr:hover {
+    background: rgba(16, 185, 129, 0.15);
+  }
+
+  /* TABEL PEMBAYARAN MAHASANTRI - SCROLL JALAN, TIDAK WRAP, ELEGANT */
+.table-responsive-cicilan {
+  overflow: auto;
+  max-height: 70vh; /* Scroll vertikal jika data banyak */
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  margin-bottom: 20px;
+}
+
+#tableCicilan {
+  width: max-content; /* Lebar sesuai isi, agar scroll muncul */
+  min-width: 100%; /* Minimal muat layar */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#tableCicilan th, #tableCicilan td {
+  white-space: nowrap; /* TIDAK ADA WRAP TEKS */
+  padding: 14px 12px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* Header sticky atas */
+#tableCicilan thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(16, 185, 129, 0.7);
+  color: #ecfdf5;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+}
+
+/* Kolom Nama sticky kiri */
+#tableCicilan th:first-child,
+#tableCicilan td:first-child {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  color: #000;
+  z-index: 11;
+  text-align: left;
+  padding-left: 24px;
+  font-weight: 600;
+  min-width: 220px;
+  border-right: 3px solid #10b981;
+}
+
+/* Header Nama (sudut kiri atas) */
+#tableCicilan thead th:first-child {
+  background: rgba(16, 185, 129, 0.8);
+  color: #ecfdf5;
+  z-index: 20;
+}
+
+/* Zebra stripe halus */
+#tableCicilan tbody tr:nth-child(even) {
+  background: rgba(6, 78, 59, 0.2);
+}
+
+/* Pastikan kolom Nama putih tetap menang */
+#tableCicilan tbody td:first-child {
+  background: #ffffff !important;
+}
+
+/* Kolom uang align right */
+#tableCicilan td:nth-child(n+4) { /* Mulai dari Tanggungan sampai akhir */
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+/* Badge status */
+#tableCicilan .badge-lunas {
+  background: #10b981;
+  color: #000;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-weight: bold;
+}
+
+#tableCicilan .badge-belum {
+  background: #fbbf24;
+  color: #000;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-weight: bold;
+}
+
+  /* Login Page */
+  #loginPage {
+    max-width: 500px;
+    margin: 120px auto;
+    padding: 50px;
+    text-align: center;
+    border-radius: 24px;
+  }
+
+  .logo-title {
+    font-size: 52px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+  }
+
+  /* Tab Master Data */
+  #master .nav-tabs {
+    border-bottom: 2px solid rgba(16, 185, 129, 0.4);
+  }
+
+  #master .nav-link {
+    color: #d1fae5;
+    background: transparent;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 16px 16px 0 0;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  #master .nav-link:hover {
+    background: rgba(16, 185, 129, 0.2);
+    color: #ffffff;
+  }
+
+  #master .nav-link.active {
+    background: #10b981;
+    color: #000000;
+    box-shadow: 0 -6px 15px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Scrollbar Custom */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(6, 78, 59, 0.5);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.6);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #10b981;
+  }
+
+#tableAbsenHariIni th:nth-child(2),
+#tableAbsenHariIni td:nth-child(2) {
+  min-width: 180px;
+  text-align: left;
+}
+
+/* FITUR AUTO EXPAND/HIDE SIDEBAR ON HOVER */
+.sidebar {
+  width: 78px; /* Default collapsed */
+  overflow: hidden;
+}
+
+.sidebar:hover {
+  width: 240px; /* Expand saat hover */
+  overflow-y: auto;
+}
+
+.sidebar .menu-text {
+  opacity: 0;
+  width: 0;
+  transition: opacity 0.3s ease, width 0s 0.3s; /* Delay width agar teks muncul setelah expand */
+  white-space: nowrap;
+}
+
+.sidebar:hover .menu-text {
+  opacity: 1;
+  width: auto;
+  transition: opacity 0.4s ease 0.2s; /* Muncul dengan delay halus */
+}
+
+/* Ikon tetap terpusat saat collapsed */
+.sidebar .menu-item {
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.sidebar:hover .menu-item {
+  justify-content: flex-start;
+  padding: 16px 24px;
+}
+
+/* Scrollbar hanya muncul saat hover (opsional, lebih clean) */
+.sidebar::-webkit-scrollbar {
+  width: 0;
+}
+.sidebar:hover::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.6);
+  border-radius: 4px;
+}
+
+</style>
+</head>
+<body>
+  <!-- Halaman Login -->
+  <div id="loginPage" class="glass">
+    <h1 class="logo-title accent-emerald">Ma'had Aly</h1>
+    <h3 class="mb-4 text-emerald">Sistem Dashboard</h3>
+    <form id="loginForm">
+      <div class="mb-3">
+        <input type="text" id="username" class="form-control form-control-lg" placeholder="Username" required>
+      </div>
+      <div class="mb-4">
+        <input type="password" id="password" class="form-control form-control-lg" placeholder="Password" required>
+      </div>
+      <button type="submit" class="btn btn-emerald w-100">Masuk</button>
+    </form>
+  </div>
+
+  <!-- Dashboard Utama -->
+  <div id="dashboardPage" style="display: none;">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div class="text-center mb-4">
+      </div>
+      <div class="menu-item" onclick="showMenu('home')">
+  <i class="menu-icon fas fa-home"></i> <!-- Ganti 🏠 jadi fa-home -->
+  <span class="menu-text">Dashboard</span>
+</div>
+<div class="menu-item" onclick="showMenu('absensi')">
+  <i class="menu-icon fas fa-clipboard-check"></i> <!-- Absensi -->
+  <span class="menu-text">Absensi</span>
+</div>
+<div class="menu-item" onclick="showMenu('rekap')">
+  <i class="menu-icon fas fa-chart-bar"></i> <!-- Rekap -->
+  <span class="menu-text">Rekap</span>
+</div>
+<div class="menu-item" onclick="showMenu('keuangan')">
+  <i class="menu-icon fas fa-money-bill-wave"></i> <!-- Keuangan -->
+  <span class="menu-text">Keuangan</span>
+</div>
+<div class="menu-item" id="masterLink" onclick="showMenu('master')">
+  <i class="menu-icon fas fa-cog"></i> <!-- Settings -->
+  <span class="menu-text">Manajemen Data</span>
+</div>
+<div class="menu-item logout-btn" onclick="logout()">
+  <i class="menu-icon fas fa-sign-out-alt"></i> <!-- Logout -->
+  <span class="menu-text">Keluar</span>
+</div>
+      <div class="text-center mt-4 pb-3">
+        <small>Role: <span id="userRole" class="accent-emerald fw-bold"></span></small>
+      </div>
+    </nav>
+
+    <!-- Konten Utama -->
+    <div class="main-content" id="mainContent">
+      <div id="home" class="glass">
+        <h2 class="accent-emerald mb-4">Selamat Datang di Dashboard Ma'had Aly</h2>
+        <p class="fs-5">Anda login sebagai <strong id="welcomeRole" class="accent-emerald"></strong></p>
+        <hr style="border-color: rgba(16, 185, 129, 0.4);">
+        <div class="row text-center mt-4">
+          <div class="col-md-6 mb-4">
+            <div class="glass p-4 text-center">
+              <h4 class="text-emerald">Total Mahasantri</h4>
+              <h2 class="accent-emerald fw-bold" id="totalSantri">0</h2>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="glass p-4 text-center">
+              <h4 class="text-emerald">Total Dosen</h4>
+              <h2 class="accent-emerald fw-bold" id="totalDosen">0</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Absensi -->
+      <div id="absensi" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Absensi</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenu('absensiMahasantri')">Absensi Mahasantri</button>
+<button class="btn btn-emerald" onclick="showSubMenu('absensiDosen')">Absensi Dosen</button>
+        </div>
+
+        <!-- Absensi Mahasantri -->
+        <div id="absensiMahasantri" style="display:none;">
+          <form id="formAbsenM">
+            <div class="mb-3">
+              <select id="kelasM" class="form-select" required><option>Pilih Kelas</option></select>
+            </div>
+            <div class="mb-3">
+              <select id="mataKuliahM" class="form-select" required><option>Pilih Mata Kuliah</option></select>
+            </div>
+            <div class="mb-3">
+              <select id="statusM" class="form-select" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Izin">Izin</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Alpha">Alpha</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="date" id="tanggalM" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <input type="text" id="rfidM" class="form-control" placeholder="Scan/Ketik RFID (10 digit) lalu Enter" onkeypress="if(event.key === 'Enter') processAbsensi('mahasantri', event)">
+            </div>
+          </form>
+          <h4 class="mt-4 text-emerald">Daftar Absen Hari Ini</h4>
+          <table id="tableAbsenM" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAbsenM"></tbody> <!-- TAMBAHKAN ID INI -->
+          </table>
+        </div>
+
+        <!-- Absensi Dosen -->
+        <div id="absensiDosen" style="display:none;">
+          <form id="formAbsenD">
+            <div class="mb-3">
+              <select id="namaD" class="form-select" required><option>Pilih Nama Dosen</option></select>
+            </div>
+            <div class="mb-3">
+              <select id="mataKuliahD" class="form-select" required><option>Pilih Mata Kuliah</option></select>
+            </div>
+            <div class="mb-3">
+              <select id="statusD" class="form-select" required>
+                <option value="Hadir">Hadir</option>
+                <option value="Izin">Izin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="date" id="tanggalD" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <select id="bulanHijriD" class="form-select" required>
+                <option>Pilih Bulan Hijriah</option>
+                <option>Muharram</option><option>Safar</option><option>Rabiul Awal</option><option>Rabiul Akhir</option>
+                <option>Jumadil Awal</option><option>Jumadil Akhir</option><option>Rajab</option><option>Syaban</option>
+                <option>Ramadhan</option><option>Syawal</option><option>Dzulqaidah</option><option>Dzulhijjah</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <select id="tahunHijriD" class="form-select" required>
+                <option>Pilih Tahun Hijriah</option>
+                <option>1445</option><option>1446</option><option>1447</option><option>1448</option><option>1449</option><option>1450</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <input type="text" id="rfidD" class="form-control" placeholder="Scan/Ketik RFID (10 digit) lalu Enter" onkeypress="if(event.key === 'Enter') processAbsensi('dosen', event)">
+            </div>
+          </form>
+          <h4 class="mt-4 text-emerald">Daftar Absen Hari Ini</h4>
+          <table id="tableAbsenD" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Status</th>
+                <th>Waktu</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REKAP BARU -->
+      <div id="rekap" class="glass" style="display:none;">
+        <h2 class="accent-emerald">Rekap Kehadiran</h2>
+        <div class="d-flex mb-4 gap-3">
+          <button class="btn btn-emerald" onclick="showSubMenu('rekapMahasantri')">Rekap Mahasantri</button>
+<button class="btn btn-emerald" onclick="showSubMenu('rekapDosen')">Rekap Dosen</button>
+        </div>
+
+        <!-- Rekap Mahasantri -->
+        <div id="rekapMahasantri" style="display:none;">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <input type="text" id="searchRekapM" class="form-control" placeholder="Cari nama mahasantri...">
+            </div>
+            <div class="col-md-3">
+              <select id="filterKelasRekapM" class="form-select"><option value="">Semua Kelas</option></select>
+            </div>
+            <div class="col-md-3">
+              <select id="filterMKRekapM" class="form-select"><option value="">Semua Mata Kuliah</option></select>
+            </div>
+            <div class="col-md-2">
+              <select id="filterStatusRekapM" class="form-select"><option value="">Semua Status</option>
+                <option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alpha</option>
+              </select>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-emerald" onclick="exportRekap('mahasantri', 'excel')">Export Excel</button>
+            <button class="btn btn-emerald" onclick="exportRekap('mahasantri', 'pdf')">Export PDF</button>
+          </div>
+          <table id="tableRekapM" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Rekap Dosen -->
+        <div id="rekapDosen" style="display:none;">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <input type="text" id="searchRekapD" class="form-control" placeholder="Cari nama dosen...">
+            </div>
+          </div>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-emerald" onclick="exportRekap('dosen', 'excel')">Export Excel</button>
+            <button class="btn btn-emerald" onclick="exportRekap('dosen', 'pdf')">Export PDF</button>
+          </div>
+          <table id="tableRekapD" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Mata Kuliah</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Bulan Hijri</th>
+                <th>Tahun Hijri</th>
+                <th>Aksi (Admin)</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+     <!-- Keuangan - Bisyarah Dosen (VERSI BARU) -->
+ <div id="keuangan" class="glass" style="display:none;">
+  <h2 class="accent-emerald">Keuangan</h2>
+  <div class="d-flex mb-4 gap-3">
+    <button class="btn btn-emerald" onclick="showSubMenuKeuangan('bisyarah')">Bisyarah Dosen</button>
+    <button class="btn btn-emerald" onclick="showSubMenuKeuangan('cicilan')">Pembayaran Mahasantri</button>
+  </div>
+  <div id="bisyarah" style="display:block;">
+    <div class="row mb-4 align-items-end">
+      <div class="col-md-3">
+        <label class="text-emerald">Bulan Hijriah</label>
+        <select id="bulanBisyarah" class="form-select">
+          <option value="">Pilih Bulan</option>
+          <option>Muharram</option><option>Safar</option><option>Rabiul Awal</option><option>Rabiul Akhir</option>
+          <option>Jumadil Awal</option><option>Jumadil Akhir</option><option>Rajab</option><option>Syaban</option>
+          <option>Ramadhan</option><option>Syawal</option><option>Dzulqaidah</option><option>Dzulhijjah</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="text-emerald">Tahun Hijriah</label>
+        <select id="tahunBisyarah" class="form-select">
+          <option value="">Pilih Tahun</option>
+          <option>1445</option><option>1446</option><option>1447</option><option>1448</option><option>1449</option><option>1450</option>
+        </select>
+      </div>
+      <div class="col-md-6 text-end">
+        <button class="btn btn-emerald me-2" onclick="exportBisyarah('excel')">Export Excel</button>
+        <button class="btn btn-emerald" onclick="exportBisyarah('pdf')">Export PDF</button>
+      </div>
+    </div>
+
+    <!-- Nominal Global -->
+    <div class="row mb-4" id="globalNominalSection" style="display:none;">
+      <div class="col-md-4">
+        <label class="text-emerald fw-bold">Nominal per Hadir (Global untuk semua dosen)</label>
+        <input type="number" id="globalNominalHadir" class="nominal-input form-control" value="100000" onblur="updateGlobalNominal()">
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nama Dosen</th>
+            <th>Jumlah Hadir</th>
+            <th>Bisyarah dari Hadir</th>
+            <th>Tambahan (Admin)</th>
+            <th>Total Bisyarah</th>
+            <th>Status</th>
+            <th>Aksi Status (Admin)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBisyarah"></tbody>
+      </table>
+    </div>
+    
+    <div class="mt-4 text-end">
+      <h4 class="accent-emerald mb-2">Total Harus Dibayar: <span id="totalHarusDibayar">Rp 0</span></h4>
+      <h4 class="accent-emerald mb-2 text-success">Total Terbayar: <span id="totalTerbayar">Rp 0</span></h4>
+      <h4 class="accent-emerald text-danger">Total Belum Terbayar: <span id="totalBelumTerbayar">Rp 0</span></h4>
+    </div>
+  </div>
+
+  <!-- Pembayaran Mahasantri -->
+  <div id="cicilan" style="display:none;">
+    <h3 class="accent-emerald mb-4">Pembayaran Mahasantri - Cicilan Semester</h3>
+
+    <div class="row mb-4 align-items-end">
+      <div class="col-md-4">
+        <label class="text-emerald fw-bold">Tagihan Semester Saat Ini (Global)</label>
+        <input type="number" id="globalTagihanSemester" class="form-control" value="3000000" onblur="updateGlobalTagihan()">
+      </div>
+      <div class="col-md-4">
+        <label class="text-emerald">Cari Mahasantri</label>
+        <input type="text" id="searchMahasantri" class="form-control" placeholder="Nama, NIM, atau Kelas...">
+      </div>
+      <div class="col-md-4 text-end">
+        <button class="btn btn-emerald" onclick="exportCicilan('excel')">Export Excel</button>
+        <button class="btn btn-emerald" onclick="exportCicilan('pdf')">Export PDF</button>
+      </div>
+    </div>
+
+    <div class="table-responsive-cicilan">
+  <table id="tableCicilan" class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>NIM</th>
+        <th>Kelas</th>
+        <th>Tanggungan</th>
+        <th>Potongan</th>
+        <th>Total Tagihan</th>
+        <th>Cicilan 1</th>
+        <th>Cicilan 2</th>
+        <th>Cicilan 3</th>
+        <th>Cicilan 4</th>
+        <th>Cicilan 5</th>
+        <th>Cicilan 6</th>
+        <th>Total Bayar</th>
+        <th>Sisa</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyCicilan"></tbody>
+  </table>
+</div>
+  </div>
+</div>
+
+      <!-- Master placeholder -->
+      <div id="master" class="glass" style="display:none;">
+      <h2 class="accent-emerald mb-4">Manajemen Data Master</h2>
+      
+      <div class="d-flex justify-content-end mb-4 gap-3">
+        <button class="btn btn-emerald" onclick="backupDatabase()">Backup Database (Download JSON)</button>
+        <label class="btn btn-emerald">
+          Restore Database
+          <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restoreDatabase(this.files[0])">
+        </label>
+      </div>
+
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <button class="nav-link active" id="tab-mahasantri-btn" onclick="showMasterTab('mahasantri')">Mahasantri</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-dosen-btn" onclick="showMasterTab('dosen')">Dosen</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-kelas-btn" onclick="showMasterTab('kelas')">Kelas</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-matkul-btn" onclick="showMasterTab('matkul')">Mata Kuliah</button>
+        </li>
+      </ul>
+
+      <!-- Tab Mahasantri -->
+      <div id="tab-mahasantri">
+        <div class="d-flex justify-content-between mb-3">
+          <input type="text" id="searchMahasantriMaster" class="form-control" placeholder="Cari nama, NIM, RFID...">
+          <div>
+            <button class="btn btn-emerald me-2" onclick="downloadTemplate('mahasantri')">Download Template Excel</button>
+            <label class="btn btn-emerald me-2">
+              Import Excel
+              <input type="file" id="importMahasantriExcel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel('mahasantri', this.files[0])">
+            </label>
+            <button class="btn btn-emerald" onclick="openModalAdd('mahasantri')">Tambah Mahasantri</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>NIM</th>
+                <th>RFID</th>
+                <th>Kelas</th>
+                <th>Tanggungan</th>
+                <th>Potongan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMahasantri"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Dosen -->
+      <div id="tab-dosen" style="display:none;">
+        <div class="d-flex justify-content-between mb-3">
+          <input type="text" id="searchDosenMaster" class="form-control" placeholder="Cari nama, NIDN, RFID...">
+          <div>
+            <button class="btn btn-emerald me-2" onclick="downloadTemplate('dosen')">Download Template Excel</button>
+            <label class="btn btn-emerald me-2">
+              Import Excel
+              <input type="file" id="importDosenExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('dosen', this.files[0])">
+            </label>
+            <button class="btn btn-emerald" onclick="openModalAdd('dosen')">Tambah Dosen</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>NIDN</th>
+                <th>RFID</th>
+                <th>Tambahan Bisyarah</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDosen"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Kelas -->
+      <div id="tab-kelas" style="display:none;">
+        <div class="d-flex justify-content-between mb-3">
+          <input type="text" id="searchKelasMaster" class="form-control" placeholder="Cari kelas...">
+          <div>
+            <button class="btn btn-emerald me-2" onclick="downloadTemplate('kelas')">Download Template Excel</button>
+            <label class="btn btn-emerald me-2">
+              Import Excel
+              <input type="file" id="importKelasExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('kelas', this.files[0])">
+            </label>
+            <button class="btn btn-emerald" onclick="openModalAdd('kelas')">Tambah Kelas</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Kelas</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyKelas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Mata Kuliah -->
+      <div id="tab-matkul" style="display:none;">
+        <div class="d-flex justify-content-between mb-3">
+          <input type="text" id="searchMatkulMaster" class="form-control" placeholder="Cari mata kuliah atau kelas...">
+          <div>
+            <button class="btn btn-emerald me-2" onclick="downloadTemplate('matkul')">Download Template Excel</button>
+            <label class="btn btn-emerald me-2">
+              Import Excel
+              <input type="file" id="importMatkulExcel" accept=".xlsx,.xls" style="display:none;" onchange="importExcel('matkul', this.files[0])">
+            </label>
+            <button class="btn btn-emerald" onclick="openModalAdd('matkul')">Tambah Mata Kuliah</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Nama Mata Kuliah</th>
+                <th>Kelas</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMatkul"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    // Database
+    const db = new Dexie('MahadAlyDB');
+    db.version(9).stores({
+    users: 'username,password,role',
+    kelas: 'kelas',
+    mataKuliah: '++id,nama,kelas',
+    mahasantri: 'rfid,nama,nim,kelas,tanggungan,potongan',
+    dosen: 'rfid,nama,nidn,tambahanBisyarah',
+    absensiMahasantri: '++id, [nama+tanggal+mataKuliah], rfid, tanggal, mataKuliah, status, timestamp, kelas',
+    absensiDosen: '++id, [nama+tanggal+mataKuliah], rfid, tanggal, mataKuliah, status, timestamp, bulanHijriah, tahunHijriah',
+    bisyarahStatus: '++id, bulanHijri, tahunHijri, rfid, status',
+    settings: 'key,value',
+    pembayaranCicilan: '++id, rfid, cicilanKe, jumlah, tanggal, keterangan, timestamp'
+  });
+
+    // Update dosen dengan nominalHadir default
+    async function initDummyData() {
+      if (await db.users.count() === 0) {
+        await db.users.bulkAdd([
+          { username: 'admin', password: '@Mafadza18', role: 'admin' },
+          { username: 'operator', password: '@Mafaidz18', role: 'operator' }
+        ]);
+      }
+
+    // Data Dummy
+    const dummyData = {
+      "kelas": ["1A","1B","2A","2B","3A","3B"],
+      "mata_kuliah": [
+        {"nama":"Fiqh","kelas":"1A"},{"nama":"Fiqh","kelas":"1B"},{"nama":"Ushul Fiqh","kelas":"2A"},
+        {"nama":"Ushul Fiqh","kelas":"2B"},{"nama":"Tafsir","kelas":"3A"},{"nama":"Tafsir","kelas":"3B"},
+        {"nama":"Hadits","kelas":"1A"},{"nama":"Hadits","kelas":"1B"},{"nama":"Aqidah","kelas":"2A"},
+        {"nama":"Aqidah","kelas":"2B"},{"nama":"Bahasa Arab","kelas":"3A"},{"nama":"Bahasa Arab","kelas":"3B"}
+      ],
+      "mahasantri": [
+        {"nama":"Mahasantri 1","nim":"NIM0001","rfid":"7511258521","kelas":"1B"},
+        {"nama":"Mahasantri 2","nim":"NIM0002","rfid":"9980983503","kelas":"2A"},
+        {"nama":"Mahasantri 3","nim":"NIM0003","rfid":"6447728806","kelas":"3A"},
+        {"nama":"Mahasantri 4","nim":"NIM0004","rfid":"0038645989","kelas":"2A"},
+        {"nama":"Mahasantri 5","nim":"NIM0005","rfid":"7178178033","kelas":"2B"},
+        {"nama":"Mahasantri 6","nim":"NIM0006","rfid":"2929929562","kelas":"2B"},
+        {"nama":"Mahasantri 7","nim":"NIM0007","rfid":"1221219450","kelas":"2B"},
+        {"nama":"Mahasantri 8","nim":"NIM0008","rfid":"9404069052","kelas":"1A"},
+        {"nama":"Mahasantri 9","nim":"NIM0009","rfid":"6057218793","kelas":"1A"},
+        {"nama":"Mahasantri 10","nim":"NIM0010","rfid":"6135456006","kelas":"1B"},
+        {"nama":"Mahasantri 11","nim":"NIM0011","rfid":"4085886222","kelas":"3B"},
+        {"nama":"Mahasantri 12","nim":"NIM0012","rfid":"6615309517","kelas":"3B"},
+        {"nama":"Mahasantri 13","nim":"NIM0013","rfid":"2524730603","kelas":"3B"},
+        {"nama":"Mahasantri 14","nim":"NIM0014","rfid":"1049938947","kelas":"3B"},
+        {"nama":"Mahasantri 15","nim":"NIM0015","rfid":"9507779599","kelas":"1A"},
+        {"nama":"Mahasantri 16","nim":"NIM0016","rfid":"1756663760","kelas":"3A"},
+        {"nama":"Mahasantri 17","nim":"NIM0017","rfid":"0356917788","kelas":"1A"},
+        {"nama":"Mahasantri 18","nim":"NIM0018","rfid":"7831268595","kelas":"1B"},
+        {"nama":"Mahasantri 19","nim":"NIM0019","rfid":"5371014650","kelas":"1B"},
+        {"nama":"Mahasantri 20","nim":"NIM0020","rfid":"5733043716","kelas":"2A"}
+      ],
+      "dosen": [
+        {"nama":"Dosen 1","nidn":"NIDN0001","rfid":"0315714665"},
+        {"nama":"Dosen 2","nidn":"NIDN0002","rfid":"2594535751"},
+        {"nama":"Dosen 3","nidn":"NIDN0003","rfid":"2220272898"},
+        {"nama":"Dosen 4","nidn":"NIDN0004","rfid":"8887781869"},
+        {"nama":"Dosen 5","nidn":"NIDN0005","rfid":"8103225791"},
+        {"nama":"Dosen 6","nidn":"NIDN0006","rfid":"1067598296"},
+        {"nama":"Dosen 7","nidn":"NIDN0007","rfid":"7328698496"},
+        {"nama":"Dosen 8","nidn":"NIDN0008","rfid":"1858067806"},
+        {"nama":"Dosen 9","nidn":"NIDN0009","rfid":"1942588895"},
+        {"nama":"Dosen 10","nidn":"NIDN0010","rfid":"0478189833"}
+      ]
+    };
+
+    // Init Dummy Data
+    async function initDummyData() {
+      if ((await db.users.count()) === 0) {
+        await db.users.bulkAdd([
+          { username: 'admin', password: '@Mafadza18', role: 'admin' },
+          { username: 'operator', password: '@Mafaidz18', role: 'operator' }
+        ]);
+      }
+      if ((await db.kelas.count()) === 0) {
+        await db.kelas.bulkAdd(dummyData.kelas.map(k => ({kelas: k})));
+      }
+      if ((await db.mataKuliah.count()) === 0) {
+        await db.mataKuliah.bulkAdd(dummyData.mata_kuliah);
+      }
+      if ((await db.mahasantri.count()) === 0) {
+  await db.mahasantri.bulkAdd(dummyData.mahasantri.map(s => ({...s, tagihanSemester: 3000000})));
+} else {
+  // Update existing mahasantri agar punya tagihan
+  const list = await db.mahasantri.toArray();
+  for (let s of list) {
+    if (!s.tagihanSemester) {
+      await db.mahasantri.update(s.rfid, { tagihanSemester: 3000000 });
+    }
+  }
+}
+      if (await db.dosen.count() === 0) {
+        await db.dosen.bulkAdd([
+          {nama: "Dosen 1", nidn: "NIDN0001", rfid: "0315714665", nominalHadir: 100000},
+          {nama: "Dosen 2", nidn: "NIDN0002", rfid: "2594535751", nominalHadir: 100000},
+          // ... dosen lain sama, nominalHadir 100000
+          {nama: "Dosen 10", nidn: "NIDN0010", rfid: "0478189833", nominalHadir: 100000}
+        ]);
+      } else {
+        // Update existing dosen agar punya nominalHadir
+        const dosenList = await db.dosen.toArray();
+        for (let d of dosenList) {
+          if (!d.nominalHadir) {
+            await db.dosen.update(d.rfid, { nominalHadir: 100000 });
+
+            // Init tagihan global
+            async function initGlobalTagihan() {
+              const tagihan = await db.settings.get('globalTagihanSemester');
+              if (!tagihan) {
+                await db.settings.put({ key: 'globalTagihanSemester', value: 3000000 });
+              }
+            }
+
+            // Update existing mahasantri agar punya tanggungan & potongan default 0
+            const mahasantriList = await db.mahasantri.toArray();
+            for (let s of mahasantriList) {
+              if (s.tanggungan === undefined) await db.mahasantri.update(s.rfid, { tanggungan: 0 });
+              if (s.potongan === undefined) await db.mahasantri.update(s.rfid, { potongan: 0 });
+            }
+
+            initGlobalTagihan();
+
+      Toastify({ text: "Data dummy berhasil dimuat!", background: "#10b981" }).showToast();
+      
+          }}}}updateStats();
+    }
+    initDummyData();
+
+    // Login & Dashboard Functions (tetap sama)
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const user = await db.users.where({ username, password }).first();
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        loadDashboard(user);
+        Toastify({ text: `Selamat datang, ${username}!`, background: "#10b981" }).showToast();
+      } else {
+        Toastify({ text: "Username atau password salah!", background: "#ef4444" }).showToast();
+      }
+    };
+
+    function loadDashboard(user) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboardPage').style.display = 'block';
+      document.getElementById('userRole').textContent = user.role.toUpperCase();
+      document.getElementById('welcomeRole').textContent = user.role === 'admin' ? 'Administrator' : 'Operator';
+      if (user.role !== 'admin') document.getElementById('masterLink').style.display = 'none';
+      showMenu('home');
+      loadAbsensiDropdowns();
+      startAutoAlpha();
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      document.getElementById('dashboardPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      Toastify({ text: "Logout berhasil!", background: "#10b981" }).showToast();
+    }
+
+    function showMenu(menuId) {
+      document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+      document.getElementById(menuId).style.display = 'block';
+      if (menuId === 'absensi') {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggalM').value = today;
+        document.getElementById('tanggalD').value = today;
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+    }
+
+    // Init Global Nominal
+    async function initSettings() {
+      const globalNom = await db.settings.get('globalNominalHadir');
+      if (!globalNom) {
+        await db.settings.put({ key: 'globalNominalHadir', value: 100000 });
+      }
+    }
+
+    // Update Global Nominal
+    async function updateGlobalNominal() {
+      const value = parseInt(document.getElementById('globalNominalHadir').value) || 100000;
+      await db.settings.put({ key: 'globalNominalHadir', value });
+      hitungBisyarah();
+      Toastify({ text: "Nominal global diperbarui!", background: "#10b981" }).showToast();
+    }
+
+    // Update Tambahan per Dosen
+    async function updateTambahan(rfid, input) {
+      const value = parseInt(input.value) || 0;
+      const existing = await db.dosen.get(rfid);
+      if (existing) {
+        await db.dosen.update(rfid, { tambahanBisyarah: value });
+      }
+      hitungBisyarah();
+    }
+
+    // Hitung Bisyarah
+    async function hitungBisyarah() {
+  const bulan = document.getElementById('bulanBisyarah').value;
+  const tahun = document.getElementById('tahunBisyarah').value;
+  if (!bulan || !tahun) {
+    document.getElementById('tableBisyarah').innerHTML = '<tr><td colspan="7" class="text-center">Pilih Bulan dan Tahun Hijriah</td></tr>';
+    document.getElementById('totalHarusDibayar').textContent = 'Rp 0';
+    document.getElementById('totalTerbayar').textContent = 'Rp 0';
+    document.getElementById('totalBelumTerbayar').textContent = 'Rp 0';
+    document.getElementById('globalNominalSection').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('globalNominalSection').style.display = 'block';
+  const globalNomRecord = await db.settings.get('globalNominalHadir');
+  const globalNominal = globalNomRecord ? globalNomRecord.value : 100000;
+  document.getElementById('globalNominalHadir').value = globalNominal;
+
+  const dosenList = await db.dosen.toArray();
+  const tbody = document.getElementById('tableBisyarah');
+  tbody.innerHTML = '';
+  let totalHarusDibayar = 0;
+  let totalTerbayar = 0;
+  let totalBelumTerbayar = 0;
+
+  const isAdmin = JSON.parse(localStorage.getItem('currentUser') || '{}').role === 'admin';
+
+  for (let dosen of dosenList) {
+    const hadir = await db.absensiDosen.where({ nama: dosen.nama, bulanHijri: bulan, tahunHijri: tahun, status: 'Hadir' }).count();
+    const bisyarahHadir = hadir * globalNominal;
+    const tambahan = dosen.tambahanBisyarah || 0;
+    const totalBisyarah = bisyarahHadir + tambahan;
+
+    const statusRecord = await db.bisyarahStatus.where({ rfid: dosen.rfid, bulanHijri: bulan, tahunHijri: tahun }).first();
+    const status = statusRecord?.status || 'Belum Dibayar';
+
+    if (status === 'Sudah Dibayar') {
+      totalTerbayar += totalBisyarah;
+    } else {
+      totalBelumTerbayar += totalBisyarah;
+    }
+    totalHarusDibayar += totalBisyarah;
+
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${dosen.nama}</td>
+      <td>${hadir} kali</td>
+      <td>Rp ${bisyarahHadir.toLocaleString('id-ID')}</td>
+      <td>
+        ${isAdmin ? `<input type="number" class="tambahan-input" value="${tambahan}" data-rfid="${dosen.rfid}" onblur="updateTambahan('${dosen.rfid}', this)">` : `Rp ${tambahan.toLocaleString('id-ID')}`}
+      </td>
+      <td class="fw-bold">Rp ${totalBisyarah.toLocaleString('id-ID')}</td>
+      <td><span class="badge ${status === 'Sudah Dibayar' ? 'badge-lunas' : 'badge-belum'}">${status}</span></td>
+      <td>
+        ${isAdmin ? `<button class="btn btn-sm ${status === 'Sudah Dibayar' ? 'btn-warning' : 'btn-success'}" onclick="toggleStatusBisyarah('${dosen.rfid}', '${bulan}', '${tahun}')">
+          ${status === 'Sudah Dibayar' ? 'Tandai Belum' : 'Tandai Sudah'}
+        </button>` : '-'}
+      </td>
+    `;
+  }
+
+  document.getElementById('totalHarusDibayar').textContent = 'Rp ' + totalHarusDibayar.toLocaleString('id-ID');
+  document.getElementById('totalTerbayar').textContent = 'Rp ' + totalTerbayar.toLocaleString('id-ID');
+  document.getElementById('totalBelumTerbayar').textContent = 'Rp ' + totalBelumTerbayar.toLocaleString('id-ID');
+}
+
+    // Update Nominal per Hadir
+    async function updateNominal(input) {
+      const rfid = input.dataset.rfid;
+      const newNominal = parseInt(input.value) || 100000;
+      await db.dosen.update(rfid, { nominalHadir: newNominal });
+      hitungBisyarah();
+      Toastify({ text: "Nominal per hadir diperbarui!", background: "#10b981" }).showToast();
+    }
+
+    async function toggleStatusBisyarah(rfid, bulan, tahun) {
+      const record = await db.bisyarahStatus.where({ rfid, bulanHijri: bulan, tahunHijri: tahun }).first();
+      if (record) {
+        if (record.status === 'Sudah Dibayar') {
+          await db.bisyarahStatus.delete(record.id);
+        } else {
+          await db.bisyarahStatus.update(record.id, { status: 'Sudah Dibayar' });
+        }
+      } else {
+        await db.bisyarahStatus.add({ rfid, bulanHijri: bulan, tahunHijri: tahun, status: 'Sudah Dibayar' });
+      }
+      hitungBisyarah();
+      Toastify({ text: "Status bisyarah diperbarui!", background: "#10b981" }).showToast();
+    }
+
+    // Export PDF DIPERBAIKI dengan autoTable yang benar
+    async function exportBisyarah(format) {
+  const bulan = document.getElementById('bulanBisyarah').value;
+  const tahun = document.getElementById('tahunBisyarah').value;
+  if (!bulan || !tahun) {
+    Toastify({ text: "Pilih bulan dan tahun dulu!", background: "#ef4444" }).showToast();
+    return;
+  }
+      const globalNomRecord = await db.settings.get('globalNominalHadir');
+  const globalNominal = globalNomRecord ? globalNomRecord.value : 100000;
+
+  const dosenList = await db.dosen.toArray();
+  const data = [];
+  let grandTotal = 0;
+
+  for (let dosen of dosenList) {
+    const hadir = await db.absensiDosen.where({ nama: dosen.nama, bulanHijri: bulan, tahunHijri: tahun, status: 'Hadir' }).count();
+    const bisyarahHadir = hadir * globalNominal;
+    const tambahan = dosen.tambahanBisyarah || 0;
+    const total = bisyarahHadir + tambahan;
+    grandTotal += total;
+
+    const statusRecord = await db.bisyarahStatus.where({ rfid: dosen.rfid, bulanHijri: bulan, tahunHijri: tahun }).first();
+    const status = statusRecord?.status || 'Belum Dibayar';
+
+    data.push([
+      dosen.nama,
+      hadir + ' kali',
+      'Rp ' + globalNominal.toLocaleString('id-ID'),
+      'Rp ' + bisyarahHadir.toLocaleString('id-ID'),
+      'Rp ' + tambahan.toLocaleString('id-ID'),
+      'Rp ' + total.toLocaleString('id-ID'),
+      status
+    ]);
+  }
+
+      const filename = `bisyarah_${bulan}_${tahun}`;
+
+  if (format === 'excel') {
+    const wsData = [
+      ['Bisyarah Dosen - ' + bulan + ' ' + tahun + ' H'],
+      [],
+      ['Nama Dosen', 'Jumlah Hadir', 'Nominal per Hadir', 'Bisyarah Hadir', 'Tambahan', 'Total Bisyarah', 'Status'],
+      ...data,
+      [],
+      ['TOTAL PENGELUARAN', '', '', '', '', 'Rp ' + grandTotal.toLocaleString('id-ID'), '']
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bisyarah");
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+    Toastify({ text: "Export Excel berhasil!", background: "#10b981" }).showToast();
+  } else if (format === 'pdf') {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    doc.setFontSize(18);
+    doc.text(`Bisyarah Dosen - ${bulan} ${tahun} H`, 14, 20);
+
+    doc.autoTable({
+      head: [['Nama Dosen', 'Jumlah Hadir', 'Nominal/Hadir', 'Bisyarah Hadir', 'Tambahan', 'Total Bisyarah', 'Status']],
+      body: data,
+      startY: 30,
+      theme: 'grid',
+      headStyles: { fillColor: [6, 78, 59], textColor: [209, 250, 229] },
+      styles: { fontSize: 11, cellPadding: 5 },
+      columnStyles: { 5: { fontStyle: 'bold' } }
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text(`Total Pengeluaran: Rp ${grandTotal.toLocaleString('id-ID')}`, 14, finalY);
+
+    doc.save(`${filename}.pdf`);
+    Toastify({ text: "Export PDF berhasil!", background: "#10b981" }).showToast();
+  }
+}
+
+    
+    // Load Dropdowns - DIPERBAIKI: Mata Kuliah Dosen otomatis terisi saat pilih nama dosen
+    async function loadAbsensiDropdowns() {
+      const kelasList = await db.kelas.toArray();
+      document.getElementById('kelasM').innerHTML = '<option value="">Pilih Kelas</option>' + kelasList.map(k => `<option>${k.kelas}</option>`).join('');
+      document.getElementById('kelasM').onchange = async () => {
+        const selectedKelas = document.getElementById('kelasM').value;
+        if (selectedKelas) {
+          const mkList = await db.mataKuliah.where('kelas').equals(selectedKelas).toArray();
+          document.getElementById('mataKuliahM').innerHTML = '<option value="">Pilih Mata Kuliah</option>' + mkList.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          document.getElementById('mataKuliahM').innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+
+      const dosenList = await db.dosen.toArray();
+      document.getElementById('namaD').innerHTML = '<option value="">Pilih Nama Dosen</option>' + dosenList.map(d => `<option value="${d.rfid}">${d.nama}</option>`).join('');
+      document.getElementById('namaD').onchange = async () => {
+        const selectedRfid = document.getElementById('namaD').value;
+        if (selectedRfid) {
+          // Otomatis isi semua mata kuliah saat dosen dipilih
+          const mkAll = await db.mataKuliah.toArray();
+          document.getElementById('mataKuliahD').innerHTML = '<option value="">Pilih Mata Kuliah</option>' + mkAll.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          document.getElementById('mataKuliahD').innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+    }
+
+    // Process Absensi (Dengan Validasi Lengkap & Toast Informatif)
+    async function processAbsensi(type, event) {
+      event.preventDefault();
+      const isDosen = type === 'dosen';
+      const upper = isDosen ? 'Dosen' : 'Mahasantri';
+      const form = document.getElementById(`formAbsen${isDosen ? 'D' : 'M'}`);
+      
+      if (!form.checkValidity()) {
+      Toastify({ text: "Isi semua field yang wajib!", background: "#ef4444" }).showToast();
+      // KOSONGKAN KOLOM RFID OTOMATIS
+      document.getElementById(`rfid${isDosen ? 'D' : 'M'}`).value = '';
+      return;
+    }
+
+      // Validasi mata kuliah wajib untuk mahasantri
+      if (!isDosen) {
+        const mataKuliah = document.getElementById('mataKuliahM').value;
+        if (!mataKuliah) {
+          Toastify({ text: "Mata Kuliah harus dipilih!", background: "#ef4444" }).showToast();
+          return;
+        }
+      }
+
+      const rfidInputId = `rfid${isDosen ? 'D' : 'M'}`;
+      const rfid = document.getElementById(rfidInputId).value.trim();
+
+      if (rfid.length !== 10 || isNaN(rfid)) {
+        Toastify({ text: "RFID harus 10 digit angka!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      const user = await db[type].where('rfid').equals(rfid).first();
+      if (!user) {
+        Toastify({ text: "ID RFID tidak ditemukan!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // === VALIDASI KHUSUS DOSEN ===
+      if (isDosen) {
+        const selectedRfid = document.getElementById('namaD').value;
+        if (rfid !== selectedRfid) {
+          Toastify({ text: "RFID tidak sesuai dengan dosen yang dipilih!", background: "#ef4444" }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      }
+      // === VALIDASI KHUSUS MAHASANTRI ===
+      else {
+        const selectedKelas = document.getElementById('kelasM').value;
+        if (user.kelas !== selectedKelas) {
+          Toastify({ 
+            text: `${user.nama} bukan kelas ${selectedKelas}, seharusnya ${user.kelas}`, 
+            background: "#ef4444" 
+          }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      }
+
+      const tanggalInputId = `tanggal${isDosen ? 'D' : 'M'}`;
+      const mataKuliahInputId = `mataKuliah${isDosen ? 'D' : 'M'}`;
+      const tanggal = document.getElementById(tanggalInputId).value;
+      const mataKuliah = document.getElementById(mataKuliahInputId).value;
+
+      // Validasi duplikat absen: nama + tanggal + mata kuliah
+      const existing = await db[`absensi${upper}`]
+        .where('[nama+tanggal+mataKuliah]')
+        .equals([user.nama, tanggal, mataKuliah])
+        .first();
+
+      if (existing) {
+        Toastify({ 
+          text: "Sudah absen mata kuliah ini hari ini!", 
+          background: "#ef4444" 
+        }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // Simpan data absensi
+      const data = {
+        nama: user.nama,
+        mataKuliah,
+        status: document.getElementById(`status${isDosen ? 'D' : 'M'}`).value,
+        tanggal,
+        timestamp: new Date().toISOString()
+      };
+
+      if (isDosen) {
+        data.bulanHijri = document.getElementById('bulanHijriD').value;
+        data.tahunHijri = document.getElementById('tahunHijriD').value;
+      } else {
+        data.kelas = user.kelas;
+      }
+
+      await db[`absensi${upper}`].add(data);
+
+      // Format tanggal Indonesia yang cantik
+      const tanggalDisplay = tanggal 
+        ? new Date(tanggal).toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          })
+        : new Date().toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+          });
+
+      // Toast sukses lengkap & informatif
+      Toastify({
+        text: `<strong>Telah Hadir!</strong><br>
+              Nama: ${user.nama}<br>
+              Mata Kuliah: ${mataKuliah}<br>
+              Tanggal: ${tanggalDisplay}`,
+        background: "#10b981",
+        duration: 6000,
+        gravity: "top",
+        position: "center",
+        escapeMarkup: false
+      }).showToast();
+
+      // Kosongkan kolom RFID setelah sukses
+      document.getElementById(rfidInputId).value = '';
+
+      // Update tabel absensi
+      updateAbsenTable(type);
+    }
+
+    // Update Tabel Absen Harian (Mahasantri & Dosen) - Versi FINAL & PASTI JALAN
+async function updateAbsenTable(type) {
+  const isDosen = type === 'dosen';
+  const upper = isDosen ? 'Dosen' : 'Mahasantri';
+  const tanggal = document.getElementById(`tanggal${isDosen ? 'D' : 'M'}`).value.trim();
+
+  const tbody = document.getElementById(`tbodyAbsen${isDosen ? 'D' : 'M'}`);
+  if (!tbody) {
+    console.error(`tbodyAbsen${isDosen ? 'D' : 'M'} tidak ditemukan!`);
+    return;
+  }
+
+  if (!tanggal) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Pilih tanggal terlebih dahulu</td></tr>';
+    return;
+  }
+
+  let data = [];
+
+  try {
+    const mataKuliah = document.getElementById(`mataKuliah${isDosen ? 'D' : 'M'}`).value.trim();
+
+    if (mataKuliah) {
+    // Gunakan composite index kalau mata kuliah dipilih
+    data = await db[`absensi${upper}`]
+      .where('[tanggal+mataKuliah]')
+      .equals([tanggal, mataKuliah])
+      .toArray();
+    } else {
+    // Fallback: query hanya tanggal kalau mata kuliah kosong
+    data = await db[`absensi${upper}`]
+      .where('tanggal')
+      .equals(tanggal)
+      .toArray();
+    }
+  } catch (error) {
+    console.error("Error loading absen:", error);
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Gagal memuat data. Coba refresh halaman.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '';
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada absen hari ini</td></tr>';
+    return;
+  }
+
+  // Urutkan terbaru di atas
+  data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const isAdmin = (JSON.parse(localStorage.getItem('currentUser') || '{}').role || '') === 'admin';
+
+  data.forEach(item => {
+    const waktu = new Date(item.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const aksi = isAdmin ? `<button class="btn btn-sm btn-danger" onclick="deleteAbsen('${type}', ${item.id})">Hapus</button>` : '';
+
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${item.nama}</td>
+      <td>${item.mataKuliah || '-'}</td>
+      <td>${item.status}</td>
+      <td>${waktu}</td>
+      <td>${aksi}</td>
+    `;
+  });
+}
+
+// Hapus Absen dengan Konfirmasi & Refresh Tabel
+async function deleteAbsen(type, id) {
+  if (!confirm('Yakin ingin menghapus absen ini?')) {
+    return;
+  }
+
+  const upper = type.charAt(0).toUpperCase() + type.slice(1);
+
+  try {
+    await db[`absensi${upper}`].delete(id);
+    Toastify({
+      text: "Absen berhasil dihapus!",
+      background: "#ef4444",
+      duration: 4000
+    }).showToast();
+  } catch (error) {
+    console.error("Error deleting absen:", error);
+    Toastify({
+      text: "Gagal menghapus absen!",
+      background: "#ef4444"
+    }).showToast();
+    return;
+  }
+
+  // Refresh tabel setelah hapus
+  updateAbsenTable(type);
+}
+
+    function startAutoAlpha() {
+      setInterval(async () => {
+        const today = new Date().toISOString().split('T')[0];
+        const mahasantri = await db.mahasantri.toArray();
+        for (const s of mahasantri) {
+          const absen = await db.absensiMahasantri.where({ nama: s.nama, tanggal: today }).first();
+          if (!absen) {
+            await db.absensiMahasantri.add({
+              nama: s.nama,
+              kelas: s.kelas,
+              mataKuliah: 'Auto',
+              status: 'Alpha',
+              tanggal: today,
+              timestamp: new Date().toISOString()
+            });
+          }
+        }
+        updateAbsenTable('mahasantri');
+      }, 3600000);
+    }
+
+    async function updateStats() {
+      document.getElementById('totalSantri').textContent = await db.mahasantri.count();
+      document.getElementById('totalDosen').textContent = await db.dosen.count();
+    }
+
+    // === FITUR REKAP BARU ===
+    async function loadRekapMahasantri() {
+      const data = await db.absensiMahasantri.toArray();
+      updateTableRekapM(data);
+
+      // Load filter dropdown
+      const kelasList = await db.kelas.toArray();
+      const mkList = await db.mataKuliah.toArray();
+      document.getElementById('filterKelasRekapM').innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option>${k.kelas}</option>`).join('');
+      document.getElementById('filterMKRekapM').innerHTML = '<option value="">Semua Mata Kuliah</option>' + mkList.map(m => `<option>${m.nama}</option>`).join('');
+
+      // Event filter & search
+      ['searchRekapM', 'filterKelasRekapM', 'filterMKRekapM', 'filterStatusRekapM'].forEach(id => {
+        document.getElementById(id).oninput = () => filterRekapM();
+        document.getElementById(id).onchange = () => filterRekapM();
+      });
+    }
+
+    async function loadRekapDosen() {
+      const data = await db.absensiDosen.toArray();
+      updateTableRekapD(data);
+
+      document.getElementById('searchRekapD').oninput = () => filterRekapD();
+    }
+
+    function updateTableRekapM(data) {
+      const tbody = document.getElementById('tableRekapM').querySelector('tbody');
+      tbody.innerHTML = '';
+      const isAdmin = JSON.parse(localStorage.getItem('currentUser') || '{}').role === 'admin';
+      data.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>${item.kelas || '-'}</td>
+          <td>${item.mataKuliah}</td>
+          <td>${item.status}</td>
+          <td>${item.tanggal}</td>
+          <td>${isAdmin ? `<button class="btn btn-danger btn-sm" onclick="deleteAbsenRekap('mahasantri', ${item.id})">Hapus</button>` : ''}</td>
+        `;
+      });
+    }
+
+    function updateTableRekapD(data) {
+      const tbody = document.getElementById('tableRekapD').querySelector('tbody');
+      tbody.innerHTML = '';
+      const isAdmin = JSON.parse(localStorage.getItem('currentUser') || '{}').role === 'admin';
+      data.forEach(item => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>${item.mataKuliah}</td>
+          <td>${item.status}</td>
+          <td>${item.tanggal}</td>
+          <td>${item.bulanHijri || '-'}</td>
+          <td>${item.tahunHijri || '-'}</td>
+          <td>${isAdmin ? `<button class="btn btn-danger btn-sm" onclick="deleteAbsenRekap('dosen', ${item.id})">Hapus</button>` : ''}</td>
+        `;
+      });
+    }
+
+    async function filterRekapM() {
+      let data = await db.absensiMahasantri.toArray();
+      const search = document.getElementById('searchRekapM').value.toLowerCase();
+      const kelas = document.getElementById('filterKelasRekapM').value;
+      const mk = document.getElementById('filterMKRekapM').value;
+      const status = document.getElementById('filterStatusRekapM').value;
+
+      if (search) data = data.filter(item => item.nama.toLowerCase().includes(search));
+      if (kelas) data = data.filter(item => item.kelas === kelas);
+      if (mk) data = data.filter(item => item.mataKuliah === mk);
+      if (status) data = data.filter(item => item.status === status);
+
+      updateTableRekapM(data);
+    }
+
+    async function filterRekapD() {
+      let data = await db.absensiDosen.toArray();
+      const search = document.getElementById('searchRekapD').value.toLowerCase();
+      if (search) data = data.filter(item => item.nama.toLowerCase().includes(search));
+      updateTableRekapD(data);
+    }
+
+    async function deleteAbsenRekap(type, id) {
+      if (confirm('Hapus data absen ini?')) {
+        await db[`absensi${type.charAt(0).toUpperCase() + type.slice(1)}`].delete(id);
+        Toastify({ text: "Data dihapus!", background: "#ef4444" }).showToast();
+        type === 'mahasantri' ? loadRekapMahasantri() : loadRekapDosen();
+      }
+    }
+
+    // Export Rekap
+    async function exportRekap(type, format) {
+      const data = type === 'mahasantri' ? await db.absensiMahasantri.toArray() : await db.absensiDosen.toArray();
+      const filename = `rekap_${type}_${new Date().toISOString().split('T')[0]}`;
+
+      if (format === 'excel') {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Rekap");
+        XLSX.writeFile(wb, `${filename}.xlsx`);
+        Toastify({ text: "Export Excel berhasil!", background: "#10b981" }).showToast();
+      } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        doc.text(`Rekap Kehadiran ${type.charAt(0).toUpperCase() + type.slice(1)}`, 14, 15);
+        doc.autoTable({
+          head: [Object.keys(data[0] || {})],
+          body: data.map(item => Object.values(item)),
+          startY: 25,
+          theme: 'grid',
+          styles: { fontSize: 10, cellPadding: 3 },
+          headStyles: { fillColor: [16, 185, 129] }
+        });
+        doc.save(`${filename}.pdf`);
+        Toastify({ text: "Export PDF berhasil!", background: "#10b981" }).showToast();
+      }
+    }
+
+    // Saat menu Rekap dibuka
+    function showMenu(menuId) {
+      document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+      document.getElementById(menuId).style.display = 'block';
+      if (menuId === 'rekap') showSubMenu('rekapMahasantri');
+    }
+    
+    function showMenu(menuId) {
+      document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+      document.getElementById(menuId).style.display = 'block';
+      if (menuId === 'keuangan') hitungBisyarah();
+      // ... absensi & rekap logic
+    }
+
+    function showSubMenu(subId) {
+    // Cek apakah subId untuk absensi atau rekap
+    const isAbsensi = subId.startsWith('absensi');
+    const isRekap = subId.startsWith('rekap');
+
+  if (isAbsensi) {
+    // Sembunyikan semua sub-menu absensi
+    document.querySelectorAll('#absensi > div:not(.d-flex)').forEach(div => {
+      div.style.display = 'none';
+    });
+    document.getElementById(subId).style.display = 'block';
+
+    // Update tanggal ke hari ini
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tanggalM').value = today;
+    document.getElementById('tanggalD').value = today;
+    updateAbsenTable('mahasantri');
+    updateAbsenTable('dosen');
+  }
+
+  if (isRekap) {
+    // Sembunyikan semua sub-menu rekap
+    document.querySelectorAll('#rekap > div:not(.d-flex)').forEach(div => {
+      div.style.display = 'none';
+    });
+    document.getElementById(subId).style.display = 'block';
+
+    if (subId === 'rekapMahasantri') loadRekapMahasantri();
+    if (subId === 'rekapDosen') loadRekapDosen();
+  }
+}
+// Update showMenu untuk keuangan
+function showMenu(menuId) {
+  document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+  document.getElementById(menuId).style.display = 'block';
+  if (menuId === 'keuangan') {
+    showSubMenuKeuangan('bisyarah');
+    hitungBisyarah();
+  }}
+
+// Init settings saat load
+    initDummyData().then(() => initSettings());
+    
+    // === FITUR CICILAN MAHASANTRI ===
+function showSubMenuKeuangan(subId) {
+  document.getElementById('bisyarah').style.display = 'none';
+  document.getElementById('cicilan').style.display = 'none';
+  document.getElementById(subId).style.display = 'block';
+  if (subId === 'cicilan') loadTableCicilan();
+}
+
+// Load dropdown mahasantri
+async function loadMahasantriDropdown() {
+  const list = await db.mahasantri.toArray();
+  const select = document.getElementById('selectMahasantri');
+  select.innerHTML = '<option value="">Pilih Mahasantri</option>' + list.map(s => `<option value="${s.rfid}">${s.nama} (${s.nim})</option>`).join('');
+  select.onchange = () => {
+    const rfid = select.value;
+    if (rfid) showDetailCicilan(rfid);
+    else document.getElementById('detailCicilan').style.display = 'none';
+  };
+}
+
+// Tampilkan detail cicilan
+async function showDetailCicilan(rfid) {
+  const m = await db.mahasantri.get(rfid);
+  const payments = await db.pembayaranMahasantri.where('rfid').equals(rfid).toArray();
+  const totalBayar = payments.reduce((sum, p) => sum + p.jumlah, 0);
+  const tagihan = m.tagihanSemester || 3000000;
+  const sisa = tagihan - totalBayar;
+
+  document.getElementById('namaMahasantri').textContent = m.nama;
+  document.getElementById('nimMahasantri').textContent = m.nim;
+  document.getElementById('kelasMahasantri').textContent = m.kelas;
+  document.getElementById('totalTagihan').textContent = 'Rp ' + tagihan.toLocaleString('id-ID');
+  document.getElementById('totalDibayar').textContent = 'Rp ' + totalBayar.toLocaleString('id-ID');
+  document.getElementById('sisaTagihan').textContent = 'Rp ' + sisa.toLocaleString('id-ID');
+  document.getElementById('sisaTagihan').style.color = sisa <= 0 ? '#10b981' : '#ef4444';
+
+  const tbody = document.getElementById('riwayatPembayaran');
+  tbody.innerHTML = '';
+  payments.sort((a, b) => b.timestamp - a.timestamp).forEach((p, i) => {
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
+      <td>Rp ${p.jumlah.toLocaleString('id-ID')}</td>
+      <td>${p.keterangan || '-'}</td>
+      <td><button class="btn btn-emerald btn-sm" onclick="cetakKuitansi(${p.id})">Cetak</button></td>
+    `;
+  });
+
+  document.getElementById('detailCicilan').style.display = 'block';
+  document.getElementById('tanggalBayar').value = new Date().toISOString().split('T')[0];
+}
+
+// Simpan pembayaran
+async function simpanPembayaran() {
+  const rfid = document.getElementById('selectMahasantri').value;
+  const jumlah = parseInt(document.getElementById('jumlahBayar').value);
+  const tanggal = document.getElementById('tanggalBayar').value;
+  const keterangan = document.getElementById('keteranganBayar').value.trim();
+
+  if (!rfid || !jumlah || jumlah <= 0 || !tanggal) {
+    Toastify({ text: "Isi jumlah dan tanggal dengan benar!", background: "#ef4444" }).showToast();
+    return;
+  }
+
+  const id = await db.pembayaranMahasantri.add({
+    rfid,
+    jumlah,
+    tanggal,
+    keterangan,
+    timestamp: Date.now()
+  });
+
+  Toastify({ text: "Pembayaran berhasil disimpan!", background: "#10b981" }).showToast();
+  showDetailCicilan(rfid);
+  cetakKuitansi(id);
+
+  document.getElementById('jumlahBayar').value = '';
+  document.getElementById('keteranganBayar').value = '';
+}
+
+// Terbilang
+function terbilang(angka) {
+  const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+  if (angka < 12) return satuan[angka];
+  if (angka < 20) return satuan[angka - 10] + " Belas";
+  if (angka < 100) return satuan[Math.floor(angka / 10)] + " Puluh" + (angka % 10 ? " " + terbilang(angka % 10) : "");
+  if (angka < 200) return "Seratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+  if (angka < 1000) return satuan[Math.floor(angka / 100)] + " Ratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+  if (angka < 2000) return "Seribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+  if (angka < 1000000) return terbilang(Math.floor(angka / 1000)) + " Ribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+  if (angka < 1000000000) return terbilang(Math.floor(angka / 1000000)) + " Juta" + (angka % 1000000 ? " " + terbilang(angka % 1000000) : "");
+  return "Angka terlalu besar";
+}
+
+// Cetak Kuitansi
+async function cetakKuitansi(id) {
+  const p = await db.pembayaranMahasantri.get(id);
+  const m = await db.mahasantri.get(p.rfid);
+  const allPayments = await db.pembayaranMahasantri.where('rfid').equals(p.rfid).toArray();
+  const totalBayar = allPayments.reduce((sum, pay) => sum + pay.jumlah, 0);
+  const tagihan = m.tagihanSemester || 3000000;
+  const sisa = tagihan - totalBayar;
+  const lunas = sisa <= 0;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(20);
+  doc.text("KUITANSI PEMBAYARAN", 105, 30, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text("Ma'had Aly", 105, 40, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.text(`Nama: ${m.nama}`, 20, 60);
+  doc.text(`NIM: ${m.nim}`, 20, 70);
+  doc.text(`Kelas: ${m.kelas}`, 20, 80);
+  doc.text(`Tanggal Bayar: ${new Date(p.tanggal).toLocaleDateString('id-ID')}`, 20, 90);
+  doc.text(`Jumlah: Rp ${p.jumlah.toLocaleString('id-ID')}`, 20, 100);
+  doc.text(`Terbilang: ${terbilang(p.jumlah)} Rupiah`, 20, 110);
+  doc.text(`Keterangan: ${p.keterangan || '-'}`, 20, 120);
+
+  if (lunas) {
+    doc.setFontSize(30);
+    doc.setTextColor(16, 185, 129);
+    doc.text("L U N A S", 105, 160, { align: 'center' });
+  }
+
+  doc.save(`kuitansi_${m.nim}_${p.tanggal}.pdf`);
+}
+
+async function cetakKuitansiTerakhir() {
+  const rfid = document.getElementById('selectMahasantri').value;
+  if (!rfid) return;
+  const payments = await db.pembayaranMahasantri.where('rfid').equals(rfid).reverse().sortBy('timestamp');
+  if (payments.length > 0) cetakKuitansi(payments[0].id);
+}
+
+// Update global tagihan
+async function updateGlobalTagihan() {
+  const value = parseInt(document.getElementById('globalTagihanSemester').value) || 3000000;
+  await db.settings.put({ key: 'globalTagihanSemester', value });
+  loadTableCicilan();
+  Toastify({ text: "Tagihan semester global diperbarui!", background: "#10b981" }).showToast();
+}
+
+// Load tabel cicilan
+async function loadTableCicilan() {
+  const globalTagihan = (await db.settings.get('globalTagihanSemester'))?.value || 3000000;
+  document.getElementById('globalTagihanSemester').value = globalTagihan;
+
+  const list = await db.mahasantri.toArray();
+  const tbody = document.getElementById('tbodyCicilan');
+  tbody.innerHTML = '';
+
+  for (let m of list) {
+    const tanggungan = m.tanggungan || 0;
+    const potongan = m.potongan || 0;
+    const totalTagihan = globalTagihan + tanggungan - potongan;
+
+    const payments = await db.pembayaranCicilan.where('rfid').equals(m.rfid).toArray();
+    const cicilan = [0,0,0,0,0,0];
+    let totalBayar = 0;
+    payments.forEach(p => {
+      cicilan[p.cicilanKe - 1] += p.jumlah;
+      totalBayar += p.jumlah;
+    });
+    const sisa = totalTagihan - totalBayar;
+    const lunas = sisa <= 0;
+
+    const row = tbody.insertRow();
+    row.innerHTML = `
+      <td>${m.nama}</td>
+      <td>${m.nim}</td>
+      <td>${m.kelas}</td>
+      <td contenteditable="true" class="text-end" data-rfid="${m.rfid}" data-field="tanggungan">${tanggungan.toLocaleString('id-ID')}</td>
+      <td contenteditable="true" class="text-end" data-rfid="${m.rfid}" data-field="potongan">${potongan.toLocaleString('id-ID')}</td>
+      <td class="fw-bold">Rp ${totalTagihan.toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[0].toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[1].toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[2].toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[3].toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[4].toLocaleString('id-ID')}</td>
+      <td>Rp ${cicilan[5].toLocaleString('id-ID')}</td>
+      <td>Rp ${totalBayar.toLocaleString('id-ID')}</td>
+      <td class="${lunas ? 'text-success' : 'text-danger'} fw-bold">Rp ${sisa.toLocaleString('id-ID')}</td>
+      <td><span class="badge ${lunas ? 'badge-lunas' : 'badge-belum'}">${lunas ? 'Lunas' : 'Belum'}</span></td>
+      <td>
+        <button class="btn btn-emerald btn-sm me-1" onclick="openModalBayar('${m.rfid}', '${m.nama}')">Bayar</button>
+        <button class="btn btn-outline-light btn-sm" onclick="cetakKuitansiAll('${m.rfid}')">Kuitansi</button>
+      </td>
+    `;
+  }
+
+  // Live search
+  document.getElementById('searchMahasantri').oninput = () => {
+    const query = document.getElementById('searchMahasantri').value.toLowerCase();
+    document.querySelectorAll('#tableCicilan tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+  };
+
+  // Edit tanggungan/potongan langsung di tabel
+  tbody.addEventListener('blur', async (e) => {
+    if (e.target.isContentEditable) {
+      const rfid = e.target.dataset.rfid;
+      const field = e.target.dataset.field;
+      const value = parseInt(e.target.textContent.replace(/\D/g, '')) || 0;
+      await db.mahasantri.update(rfid, { [field]: value });
+      loadTableCicilan();
+    }
+  }, true);
+}
+
+// Modal bayar
+let currentRfid = '';
+function openModalBayar(rfid, nama) {
+  currentRfid = rfid;
+  document.getElementById('modalNama').textContent = nama;
+  document.getElementById('modalTanggal').value = new Date().toISOString().split('T')[0];
+  new bootstrap.Modal(document.getElementById('modalBayar')).show();
+}
+
+async function simpanCicilan() {
+  const cicilanKe = parseInt(document.getElementById('modalCicilanKe').value);
+  const jumlah = parseInt(document.getElementById('modalJumlah').value);
+  const tanggal = document.getElementById('modalTanggal').value;
+  const keterangan = document.getElementById('modalKeterangan').value.trim();
+
+  if (!jumlah || jumlah <= 0) {
+    Toastify({ text: "Masukkan jumlah valid!", background: "#ef4444" }).showToast();
+    return;
+  }
+
+  await db.pembayaranCicilan.add({
+    rfid: currentRfid,
+    cicilanKe,
+    jumlah,
+    tanggal,
+    keterangan,
+    timestamp: Date.now()
+  });
+
+  bootstrap.Modal.getInstance(document.getElementById('modalBayar')).hide();
+  loadTableCicilan();
+  Toastify({ text: "Cicilan disimpan!", background: "#10b981" }).showToast();
+}
+
+// Terbilang
+function terbilang(angka) {
+  const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+  if (angka < 12) return satuan[angka];
+  if (angka < 20) return satuan[angka - 10] + " Belas";
+  if (angka < 100) return satuan[Math.floor(angka / 10)] + " Puluh" + (angka % 10 ? " " + terbilang(angka % 10) : "");
+  if (angka < 200) return "Seratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+  if (angka < 1000) return satuan[Math.floor(angka / 100)] + " Ratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+  if (angka < 2000) return "Seribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+  if (angka < 1000000) return terbilang(Math.floor(angka / 1000)) + " Ribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+  if (angka < 1000000000) return terbilang(Math.floor(angka / 1000000)) + " Juta" + (angka % 1000000 ? " " + terbilang(angka % 1000000) : "");
+  return "Angka terlalu besar";
+}
+
+// Cetak Kuitansi semua cicilan
+async function cetakKuitansiAll(rfid) {
+  const m = await db.mahasantri.get(rfid);
+  const payments = await db.pembayaranCicilan.where('rfid').equals(rfid).sortBy('timestamp');
+  const globalTagihan = (await db.settings.get('globalTagihanSemester'))?.value || 3000000;
+  const totalTagihan = globalTagihan + (m.tanggungan || 0) - (m.potongan || 0);
+  const totalBayar = payments.reduce((sum, p) => sum + p.jumlah, 0);
+  const sisa = totalTagihan - totalBayar;
+  const lunas = sisa <= 0;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(20);
+  doc.text("KUITANSI PEMBAYARAN CICILAN", 105, 30, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text("Ma'had Aly", 105, 40, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.text(`Nama: ${m.nama}`, 20, 60);
+  doc.text(`NIM: ${m.nim}`, 20, 70);
+  doc.text(`Kelas: ${m.kelas}`, 20, 80);
+  doc.text(`Total Tagihan Semester: Rp ${totalTagihan.toLocaleString('id-ID')}`, 20, 90);
+  doc.text(`Total Sudah Dibayar: Rp ${totalBayar.toLocaleString('id-ID')}`, 20, 100);
+  doc.text(`Sisa Tagihan: Rp ${sisa.toLocaleString('id-ID')}`, 20, 110);
+
+  let y = 130;
+  doc.text("Riwayat Cicilan:", 20, y);
+  y += 10;
+  payments.forEach((p, i) => {
+    doc.text(`${i+1}. Cicilan ${p.cicilanKe} - Rp ${p.jumlah.toLocaleString('id-ID')} (${new Date(p.tanggal).toLocaleDateString('id-ID')})`, 30, y);
+    y += 8;
+  });
+
+  if (lunas) {
+    doc.setFontSize(30);
+    doc.setTextColor(16, 185, 129);
+    doc.text("L U N A S", 105, y + 20, { align: 'center' });
+  }
+
+  doc.save(`kuitansi_${m.nim}_semua.pdf`);
+}
+
+// Update showMenu
+function showMenu(menuId) {
+  document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+  document.getElementById(menuId).style.display = 'block';
+  if (menuId === 'keuangan') {
+    showSubMenuKeuangan('cicilan'); // default buka cicilan
+    loadTableCicilan();
+  }
+}
+
+// === MANAJEMEN DATA MASTER - FINAL & 100% JALAN ===
+let currentMasterTab = 'mahasantri';
+let currentEditId = null;
+let deleteTab = '';
+let deleteId = null;
+
+function showMasterTab(tab) {
+  currentMasterTab = tab;
+  document.querySelectorAll('#master > div[id^="tab-"]').forEach(d => d.style.display = 'none');
+  document.getElementById(`tab-${tab}`).style.display = 'block';
+  document.querySelectorAll('#master .nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tab}-btn`).classList.add('active');
+  loadMasterData(tab);
+}
+
+async function loadMasterData(tab) {
+  let data = [];
+  if (tab === 'mahasantri') data = await db.mahasantri.toArray();
+  if (tab === 'dosen') data = await db.dosen.toArray();
+  if (tab === 'kelas') data = await db.kelas.toArray();
+  if (tab === 'matkul') data = await db.mataKuliah.toArray();
+
+  const tbodyId = 'tbody' + tab.charAt(0).toUpperCase() + tab.slice(1);
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+
+  data.forEach(item => {
+    const row = tbody.insertRow();
+    if (tab === 'mahasantri') {
+      row.innerHTML = `
+        <td>${item.nama}</td>
+        <td>${item.nim}</td>
+        <td>${item.rfid}</td>
+        <td>${item.kelas}</td>
+        <td>Rp ${(item.tanggungan || 0).toLocaleString('id-ID')}</td>
+        <td>Rp ${(item.potongan || 0).toLocaleString('id-ID')}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="openModalEdit('${tab}', '${item.rfid}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="openConfirmHapus('${tab}', '${item.rfid}')">Hapus</button>
+        </td>
+      `;
+    } else if (tab === 'dosen') {
+      row.innerHTML = `
+        <td>${item.nama}</td>
+        <td>${item.nidn}</td>
+        <td>${item.rfid}</td>
+        <td>Rp ${(item.tambahanBisyarah || 0).toLocaleString('id-ID')}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="openModalEdit('${tab}', '${item.rfid}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="openConfirmHapus('${tab}', '${item.rfid}')">Hapus</button>
+        </td>
+      `;
+    } else if (tab === 'kelas') {
+      row.innerHTML = `
+        <td>${item.kelas}</td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="openConfirmHapus('${tab}', '${item.kelas}')">Hapus</button>
+        </td>
+      `;
+    } else if (tab === 'matkul') {
+      row.innerHTML = `
+        <td>${item.nama}</td>
+        <td>${item.kelas}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="openModalEdit('${tab}', ${item.id})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="openConfirmHapus('${tab}', ${item.id})">Hapus</button>
+        </td>
+      `;
+    }
+  });
+
+  // Live search - lebar 40%
+  const searchId = `search${tab.charAt(0).toUpperCase() + tab.slice(1)}Master`;
+  const searchInput = document.getElementById(searchId);
+  if (searchInput) {
+    searchInput.style.width = '30%';
+    searchInput.oninput = () => {
+      const query = searchInput.value.toLowerCase();
+      tbody.querySelectorAll('tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+      });
+    };
+  }
+}
+
+function openModalAdd(tab) {
+  currentMasterTab = tab;
+  currentEditId = null;
+  document.getElementById('modalMasterTitle').textContent = 'Tambah ' + tab.charAt(0).toUpperCase() + tab.slice(1);
+  generateMasterForm(tab);
+  new bootstrap.Modal(document.getElementById('modalMaster')).show();
+}
+
+async function openModalEdit(tab, id) {
+  currentMasterTab = tab;
+  currentEditId = id;
+  let item;
+  if (tab === 'kelas') {
+    item = await db.kelas.get({kelas: id});
+  } else if (tab === 'matkul') {
+    item = await db.mataKuliah.get(parseInt(id));
+  } else {
+    item = await db[tab].get(id);
+  }
+  document.getElementById('modalMasterTitle').textContent = 'Edit ' + tab.charAt(0).toUpperCase() + tab.slice(1);
+  generateMasterForm(tab, item);
+  new bootstrap.Modal(document.getElementById('modalMaster')).show();
+}
+
+function generateMasterForm(tab, item = null) {
+  let html = '';
+  if (tab === 'mahasantri') {
+    html = `
+      <div class="mb-3"><label>Nama</label><input type="text" id="masterNama" class="form-control" value="${item?.nama || ''}"></div>
+      <div class="mb-3"><label>NIM</label><input type="text" id="masterNim" class="form-control" value="${item?.nim || ''}"></div>
+      <div class="mb-3"><label>RFID</label><input type="text" id="masterRfid" class="form-control" value="${item?.rfid || ''}" maxlength="10"></div>
+      <div class="mb-3"><label>Kelas</label><input type="text" id="masterKelas" class="form-control" value="${item?.kelas || ''}"></div>
+      <div class="mb-3"><label>Tanggungan (Rp)</label><input type="number" id="masterTanggungan" class="form-control" value="${item?.tanggungan || 0}"></div>
+      <div class="mb-3"><label>Potongan (Rp)</label><input type="number" id="masterPotongan" class="form-control" value="${item?.potongan || 0}"></div>
+    `;
+  } else if (tab === 'dosen') {
+    html = `
+      <div class="mb-3"><label>Nama</label><input type="text" id="masterNama" class="form-control" value="${item?.nama || ''}"></div>
+      <div class="mb-3"><label>NIDN</label><input type="text" id="masterNidn" class="form-control" value="${item?.nidn || ''}"></div>
+      <div class="mb-3"><label>RFID</label><input type="text" id="masterRfid" class="form-control" value="${item?.rfid || ''}" maxlength="10"></div>
+      <div class="mb-3"><label>Tambahan Bisyarah (Rp)</label><input type="number" id="masterTambahan" class="form-control" value="${item?.tambahanBisyarah || 0}"></div>
+    `;
+  } else if (tab === 'kelas') {
+    html = `
+      <div class="mb-3"><label>Kelas</label><input type="text" id="masterKelas" class="form-control" value="${item?.kelas || ''}"></div>
+    `;
+  } else if (tab === 'matkul') {
+    html = `
+      <div class="mb-3"><label>Nama Mata Kuliah</label><input type="text" id="masterNama" class="form-control" value="${item?.nama || ''}"></div>
+      <div class="mb-3"><label>Kelas</label><input type="text" id="masterKelas" class="form-control" value="${item?.kelas || ''}"></div>
+    `;
+  }
+  document.getElementById('modalMasterBody').innerHTML = html;
+  document.getElementById('btnSimpanMaster').onclick = () => simpanMaster();
+}
+
+async function simpanMaster() {
+  const tab = currentMasterTab;
+  let data = {};
+  let key = null;
+
+  if (tab === 'mahasantri') {
+    data = {
+      nama: document.getElementById('masterNama').value.trim(),
+      nim: document.getElementById('masterNim').value.trim(),
+      rfid: document.getElementById('masterRfid').value.trim(),
+      kelas: document.getElementById('masterKelas').value.trim(),
+      tanggungan: parseInt(document.getElementById('masterTanggungan').value) || 0,
+      potongan: parseInt(document.getElementById('masterPotongan').value) || 0
+    };
+    key = data.rfid;
+    if (data.rfid.length !== 10 || !data.nama || !data.nim || !data.kelas) {
+      Toastify({ text: "Isi dengan benar (RFID 10 digit)!", background: "#ef4444" }).showToast();
+      return;
+    }
+  } else if (tab === 'dosen') {
+    data = {
+      nama: document.getElementById('masterNama').value.trim(),
+      nidn: document.getElementById('masterNidn').value.trim(),
+      rfid: document.getElementById('masterRfid').value.trim(),
+      tambahanBisyarah: parseInt(document.getElementById('masterTambahan').value) || 0
+    };
+    key = data.rfid;
+    if (data.rfid.length !== 10 || !data.nama || !data.nidn) {
+      Toastify({ text: "Isi dengan benar!", background: "#ef4444" }).showToast();
+      return;
+    }
+  } else if (tab === 'kelas') {
+    data = { kelas: document.getElementById('masterKelas').value.trim() };
+    key = data.kelas;
+    if (!data.kelas) return Toastify({ text: "Isi nama kelas!", background: "#ef4444" }).showToast();
+  } else if (tab === 'matkul') {
+    data = {
+      nama: document.getElementById('masterNama').value.trim(),
+      kelas: document.getElementById('masterKelas').value.trim()
+    };
+    if (!data.nama || !data.kelas) return Toastify({ text: "Isi semua field!", background: "#ef4444" }).showToast();
+  }
+
+  if (currentEditId) {
+    if (tab === 'matkul') {
+      await db.mataKuliah.update(currentEditId, data);
+    } else if (tab === 'kelas') {
+      if (currentEditId !== key) {
+        await db.kelas.delete({kelas: currentEditId});
+        await db.kelas.put(data, key);
+      } else {
+        await db.kelas.put(data, key);
+      }
+    } else {
+      if (currentEditId !== key) {
+        await db[tab].delete(currentEditId);
+      }
+      await db[tab].put(data, key);
+    }
+  } else {
+    if (tab === 'matkul') {
+      await db.mataKuliah.add(data);
+    } else {
+      await db[tab].put(data, key);
+    }
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById('modalMaster')).hide();
+  Toastify({ text: "Data berhasil disimpan!", background: "#10b981" }).showToast();
+  loadMasterData(tab);
+}
+
+// Modal Konfirmasi Hapus
+function openConfirmHapus(tab, id) {
+  deleteTab = tab;
+  deleteId = id;
+  const modal = new bootstrap.Modal(document.getElementById('modalConfirmHapus'));
+  modal.show();
+
+  const btnYa = document.getElementById('btnYaHapus');
+  btnYa.onclick = async () => {
+    try {
+      if (deleteTab === 'kelas') {
+        /// PERBAIKAN AKHIR: key adalah string langsung
+      await db.kelas.delete(deleteId); // cukup string "1A"
+    } else if (deleteTab === 'matkul') {
+      await db.mataKuliah.delete(parseInt(deleteId));
+    } else {
+      await db[deleteTab].delete(deleteId);
+    }
+    Toastify({ text: "Data berhasil dihapus!", background: "#ef4444" }).showToast();
+    loadMasterData(deleteTab);
+  } catch (error) {
+    console.error(error);
+    Toastify({ text: "Gagal menghapus data!", background: "#ef4444" }).showToast();
+  }
+  modal.hide();
+  deleteTab = '';
+  deleteId = null;
+};
+}
+
+// Download Template (CSV)
+function downloadTemplate(type) {
+  let content = '';
+  let filename = '';
+  if (type === 'mahasantri') {
+    content = 'Nama,NIM,RFID,Kelas,Tanggungan,Potongan\nContoh Mahasantri,NIM001,1234567890,1A,0,0';
+    filename = 'template_mahasantri.csv';
+  } else if (type === 'dosen') {
+    content = 'Nama,NIDN,RFID,Tambahan Bisyarah\nContoh Dosen,NIDN001,9876543210,0';
+    filename = 'template_dosen.csv';
+  } else if (type === 'kelas') {
+    content = 'Kelas\n1A\n1B\n2A';
+    filename = 'template_kelas.csv';
+  } else if (type === 'matkul') {
+    content = 'Nama Mata Kuliah,Kelas\nFiqh,1A\nTafsir,3B';
+    filename = 'template_mata_kuliah.csv';
+  }
+
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+// Update showMenu
+function showMenu(menuId) {
+  document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+  document.getElementById(menuId).style.display = 'block';
+  if (menuId === 'master') showMasterTab('mahasantri');
+}
+
+// === FITUR BACKUP & RESTORE DATABASE ===
+async function backupDatabase() {
+  try {
+    const data = {};
+    const tables = ['users', 'kelas', 'mataKuliah', 'mahasantri', 'dosen', 'absensiMahasantri', 'absensiDosen', 'bisyarahStatus', 'settings', 'pembayaranCicilan'];
+    
+    for (let table of tables) {
+      data[table] = await db[table].toArray();
+    }
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_mahadaly_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    Toastify({ text: "Backup berhasil di-download!", background: "#10b981" }).showToast();
+  } catch (error) {
+    console.error(error);
+    Toastify({ text: "Gagal backup database!", background: "#ef4444" }).showToast();
+  }
+}
+
+async function restoreDatabase(file) {
+  if (!file) return;
+  
+  if (!confirm('Restore akan mengganti semua data saat ini. Yakin lanjutkan?')) return;
+
+  try {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const data = JSON.parse(e.target.result);
+
+      // Clear semua tabel dulu
+      await db.users.clear();
+      await db.kelas.clear();
+      await db.mataKuliah.clear();
+      await db.mahasantri.clear();
+      await db.dosen.clear();
+      await db.absensiMahasantri.clear();
+      await db.absensiDosen.clear();
+      await db.bisyarahStatus.clear();
+      await db.settings.clear();
+      await db.pembayaranCicilan.clear();
+
+      // Restore data
+      for (let table in data) {
+        if (data[table].length > 0) {
+          await db[table].bulkAdd(data[table]);
+        }
+      }
+
+      Toastify({ text: "Restore berhasil! Halaman akan direload.", background: "#10b981" }).showToast();
+      setTimeout(() => location.reload(), 2000);
+    };
+    reader.readAsText(file);
+  } catch (error) {
+    console.error(error);
+    Toastify({ text: "Gagal restore database! File rusak atau format salah.", background: "#ef4444" }).showToast();
+  }
+}
+
+// === FITUR IMPORT EXCEL KE DATA MASTER ===
+async function importExcel(tab, file) {
+  if (!file) {
+    Toastify({ text: "Pilih file Excel dulu!", background: "#ef4444" }).showToast();
+    return;
+  }
+
+  // Cek ekstensi file
+  if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
+    Toastify({ text: "File harus .xlsx, .xls, atau .csv!", background: "#ef4444" }).showToast();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      if (json.length === 0) {
+        Toastify({ text: "File Excel kosong!", background: "#ef4444" }).showToast();
+        return;
+      }
+
+      let imported = 0;
+      for (let row of json) {
+        if (tab === 'mahasantri') {
+          const rfid = String(row.RFID || '').padStart(10, '0');
+          if (!row.Nama || !row.NIM || !rfid || rfid.length !== 10 || !row.Kelas) continue;
+          await db.mahasantri.put({
+            nama: String(row.Nama || '').trim(),
+            nim: String(row.NIM || '').trim(),
+            rfid: rfid,
+            kelas: String(row.Kelas || '').trim(),
+            tanggungan: parseInt(row.Tanggungan) || 0,
+            potongan: parseInt(row.Potongan) || 0
+          }, rfid);
+          imported++;
+        } else if (tab === 'dosen') {
+          const rfid = String(row.RFID || '').padStart(10, '0');
+          if (!row.Nama || !row.NIDN || !rfid || rfid.length !== 10) continue;
+          await db.dosen.put({
+            nama: String(row.Nama || '').trim(),
+            nidn: String(row.NIDN || '').trim(),
+            rfid: rfid,
+            tambahanBisyarah: parseInt(row['Tambahan Bisyarah']) || 0
+          }, rfid);
+          imported++;
+        } else if (tab === 'kelas') {
+          if (!row.Kelas) continue;
+          await db.kelas.put({ kelas: String(row.Kelas).trim() }, String(row.Kelas).trim());
+          imported++;
+        } else if (tab === 'matkul') {
+          if (!row['Nama Mata Kuliah'] || !row.Kelas) continue;
+          await db.mataKuliah.add({
+            nama: String(row['Nama Mata Kuliah']).trim(),
+            kelas: String(row.Kelas).trim()
+          });
+          imported++;
+        }
+      }
+
+      Toastify({ text: `Berhasil import ${imported} data ${tab}!`, background: "#10b981" }).showToast();
+      loadMasterData(tab);
+    } catch (error) {
+      console.error(error);
+      Toastify({ text: "Gagal import file! Pastikan format Excel benar.", background: "#ef4444" }).showToast();
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+    window.onload = () => {
+      const saved = localStorage.getItem('currentUser');
+      if (saved) loadDashboard(JSON.parse(saved));
+    };
+
+    
+  </script>
+
+  <!-- Modal Bayar Cicilan -->
+<div class="modal fade" id="modalBayar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content glass border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title accent-emerald">Input Pembayaran Cicilan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Mahasantri:</strong> <span id="modalNama"></span></p>
+        <div class="mb-3">
+          <label>Cicilan Ke-</label>
+          <select id="modalCicilanKe" class="form-select">
+            <option value="1">Cicilan 1</option>
+            <option value="2">Cicilan 2</option>
+            <option value="3">Cicilan 3</option>
+            <option value="4">Cicilan 4</option>
+            <option value="5">Cicilan 5</option>
+            <option value="6">Cicilan 6</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label>Jumlah Bayar</label>
+          <input type="number" id="modalJumlah" class="form-control" placeholder="Contoh: 500000">
+        </div>
+        <div class="mb-3">
+          <label>Tanggal Bayar</label>
+          <input type="date" id="modalTanggal" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label>Keterangan (opsional)</label>
+          <input type="text" id="modalKeterangan" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-emerald" onclick="simpanCicilan()">Simpan & Cetak Kuitansi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div class="modal fade" id="modalMaster" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content glass border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title accent-emerald" id="modalMasterTitle">Tambah Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalMasterBody">
+        <!-- Form akan diisi oleh JavaScript -->
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-emerald" id="btnSimpanMaster">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Glassmorphism -->
+<div class="modal fade" id="modalConfirmHapus" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content glass border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title accent-emerald">Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="mb-4">Yakin ingin menghapus data ini?</p>
+        <button type="button" class="btn btn-danger me-2" id="btnYaHapus">Ya, Hapus</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
