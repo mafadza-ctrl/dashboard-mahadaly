@@ -1333,4 +1333,687 @@
       </div>
     </div>
   </div>
-      
+
+        <script>
+    // GANTI DENGAN URL APPS SCRIPT KAMU SENDIRI
+    const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXX/exec'; // <-- UBAH INI DENGAN URL KAMU !!!
+
+    // === FUNGSI UNIVERSAL GOOGLE SHEETS API ===
+    async function getData(sheetName) {
+      try {
+        const response = await fetch(`${API_URL}?sheet=${sheetName}&action=read`);
+        if (!response.ok) throw new Error('Gagal terhubung ke server');
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error getData:', error);
+        Toastify({ text: "Gagal memuat data dari Google Sheets!", background: "#ef4444" }).showToast();
+        return [];
+      }
+    }
+
+    async function addData(sheetName, rowData) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ sheet: sheetName, action: 'add', ...rowData })
+        });
+        if (!response.ok) throw new Error('Gagal menyimpan');
+        const result = await response.json();
+        if (result.status === 'success' || result.error === undefined) {
+          Toastify({ text: "Data berhasil disimpan!", background: "#10b981" }).showToast();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error('Error addData:', error);
+        Toastify({ text: "Gagal menyimpan data!", background: "#ef4444" }).showToast();
+      }
+    }
+
+    // Tombol Refresh Data (sync manual dari Google Sheets)
+    async function refreshAllData() {
+      Toastify({ text: "Memuat ulang semua data dari server...", background: "#10b981" }).showToast();
+      updateStats();
+      loadAbsensiDropdowns();
+      if (document.getElementById('absensi').style.display !== 'none') {
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+      if (document.getElementById('keuangan').style.display !== 'none') {
+        hitungBisyarah();
+        loadTableCicilan();
+      }
+      if (document.getElementById('master').style.display !== 'none') {
+        loadMasterData(currentMasterTab);
+      }
+      if (document.getElementById('rekap').style.display !== 'none') {
+        if (document.getElementById('rekapMahasantri').style.display !== 'none') loadRekapMahasantri();
+        if (document.getElementById('rekapDosen').style.display !== 'none') loadRekapDosen();
+      }
+    }
+
+    // Login
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const users = await getData('users');
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        loadDashboard(user);
+        Toastify({ text: `Selamat datang, ${username}!`, background: "#10b981" }).showToast();
+      } else {
+        Toastify({ text: "Username atau password salah!", background: "#ef4444" }).showToast();
+      }
+    };
+
+    function loadDashboard(user) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboardPage').style.display = 'block';
+      document.getElementById('userRole').textContent = user.role.toUpperCase();
+      document.getElementById('welcomeRole').textContent = user.role === 'admin' ? 'Administrator' : 'Operator';
+      if (user.role !== 'admin') document.getElementById('masterLink').style.display = 'none';
+      showMenu('home');
+      updateStats();
+      loadAbsensiDropdowns();
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      document.getElementById('dashboardPage').style.display = 'none';
+      document.getElementById('loginPage').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      Toastify({ text: "Logout berhasil!", background: "#10b981" }).showToast();
+    }
+
+    function showMenu(menuId) {
+      document.querySelectorAll('#mainContent > div').forEach(div => div.style.display = 'none');
+      document.getElementById(menuId).style.display = 'block';
+      if (menuId === 'absensi') {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggalM').value = today;
+        document.getElementById('tanggalD').value = today;
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+      if (menuId === 'keuangan') {
+        showSubMenuKeuangan('cicilan');
+        loadTableCicilan();
+      }
+      if (menuId === 'master') {
+        showMasterTab('mahasantri');
+      }
+      if (menuId === 'rekap') {
+        showSubMenu('rekapMahasantri');
+      }
+    }
+
+    function showSubMenu(subId) {
+      const isAbsensi = subId.startsWith('absensi');
+      const isRekap = subId.startsWith('rekap');
+
+      if (isAbsensi) {
+        document.querySelectorAll('#absensi > div:not(.d-flex)').forEach(div => div.style.display = 'none');
+        document.getElementById(subId).style.display = 'block';
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggalM').value = today;
+        document.getElementById('tanggalD').value = today;
+        updateAbsenTable('mahasantri');
+        updateAbsenTable('dosen');
+      }
+
+      if (isRekap) {
+        document.querySelectorAll('#rekap > div:not(.d-flex)').forEach(div => div.style.display = 'none');
+        document.getElementById(subId).style.display = 'block';
+        if (subId === 'rekapMahasantri') loadRekapMahasantri();
+        if (subId === 'rekapDosen') loadRekapDosen();
+      }
+    }
+
+    function showSubMenuKeuangan(subId) {
+      document.getElementById('bisyarah').style.display = subId === 'bisyarah' ? 'block' : 'none';
+      document.getElementById('cicilan').style.display = subId === 'cicilan' ? 'block' : 'none';
+      if (subId === 'bisyarah') hitungBisyarah();
+      if (subId === 'cicilan') loadTableCicilan();
+    }
+
+    // Update Stats Dashboard
+    async function updateStats() {
+      const mahasantri = await getData('mahasantri');
+      const dosen = await getData('dosen');
+      document.getElementById('totalSantri').textContent = mahasantri.length;
+      document.getElementById('totalDosen').textContent = dosen.length;
+    }
+
+    // Load Dropdown Absensi
+    async function loadAbsensiDropdowns() {
+      const kelasList = await getData('kelas');
+      const kelasSelect = document.getElementById('kelasM');
+      kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>' + kelasList.map(k => `<option>${k.kelas}</option>`).join('');
+
+      kelasSelect.onchange = async () => {
+        const selectedKelas = kelasSelect.value;
+        const mkSelect = document.getElementById('mataKuliahM');
+        if (selectedKelas) {
+          const mkList = await getData('mataKuliah');
+          const filtered = mkList.filter(m => m.kelas === selectedKelas);
+          mkSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>' + filtered.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          mkSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+
+      const dosenList = await getData('dosen');
+      const namaDSelect = document.getElementById('namaD');
+      namaDSelect.innerHTML = '<option value="">Pilih Nama Dosen</option>' + dosenList.map(d => `<option value="${d.rfid}">${d.nama}</option>`).join('');
+
+      namaDSelect.onchange = async () => {
+        const selectedRfid = namaDSelect.value;
+        const mkDSelect = document.getElementById('mataKuliahD');
+        if (selectedRfid) {
+          const mkAll = await getData('mataKuliah');
+          mkDSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>' + mkAll.map(m => `<option>${m.nama}</option>`).join('');
+        } else {
+          mkDSelect.innerHTML = '<option value="">Pilih Mata Kuliah</option>';
+        }
+      };
+    }
+
+    // Process Absensi
+    async function processAbsensi(type, event) {
+      event.preventDefault();
+      const isDosen = type === 'dosen';
+      const upper = isDosen ? 'Dosen' : 'Mahasantri';
+      const form = document.getElementById(`formAbsen${isDosen ? 'D' : 'M'}`);
+
+      if (!form.checkValidity()) {
+        Toastify({ text: "Isi semua field yang wajib!", background: "#ef4444" }).showToast();
+        document.getElementById(`rfid${isDosen ? 'D' : 'M'}`).value = '';
+        return;
+      }
+
+      if (!isDosen) {
+        const mataKuliah = document.getElementById('mataKuliahM').value;
+        if (!mataKuliah) {
+          Toastify({ text: "Mata Kuliah harus dipilih!", background: "#ef4444" }).showToast();
+          return;
+        }
+      }
+
+      const rfidInputId = `rfid${isDosen ? 'D' : 'M'}`;
+      const rfid = document.getElementById(rfidInputId).value.trim();
+
+      if (rfid.length !== 10 || isNaN(rfid)) {
+        Toastify({ text: "RFID harus 10 digit angka!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      const users = await getData(type);
+      const user = users.find(u => u.rfid === rfid);
+      if (!user) {
+        Toastify({ text: "ID RFID tidak ditemukan!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // Validasi khusus
+      if (isDosen) {
+        const selectedRfid = document.getElementById('namaD').value;
+        if (rfid !== selectedRfid) {
+          Toastify({ text: "RFID tidak sesuai dengan dosen yang dipilih!", background: "#ef4444" }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      } else {
+        const selectedKelas = document.getElementById('kelasM').value;
+        if (user.kelas !== selectedKelas) {
+          Toastify({ text: `${user.nama} bukan kelas ${selectedKelas}, seharusnya ${user.kelas}`, background: "#ef4444" }).showToast();
+          document.getElementById(rfidInputId).value = '';
+          return;
+        }
+      }
+
+      const tanggal = document.getElementById(`tanggal${isDosen ? 'D' : 'M'}`).value;
+      const mataKuliah = document.getElementById(`mataKuliah${isDosen ? 'D' : 'M'}`).value;
+
+      // Cek duplikat
+      const absensiList = await getData(`absensi${upper}`);
+      const existing = absensiList.find(a => a.nama === user.nama && a.tanggal === tanggal && a.mataKuliah === mataKuliah);
+      if (existing) {
+        Toastify({ text: "Sudah absen mata kuliah ini hari ini!", background: "#ef4444" }).showToast();
+        document.getElementById(rfidInputId).value = '';
+        return;
+      }
+
+      // Simpan data
+      const data = {
+        nama: user.nama,
+        mataKuliah,
+        status: document.getElementById(`status${isDosen ? 'D' : 'M'}`).value,
+        tanggal,
+        timestamp: new Date().toISOString()
+      };
+
+      if (isDosen) {
+        data.bulanHijri = document.getElementById('bulanHijriD').value;
+        data.tahunHijri = document.getElementById('tahunHijriD').value;
+      } else {
+        data.kelas = user.kelas;
+      }
+
+      await addData(`absensi${upper}`, data);
+
+      // Toast sukses
+      const tanggalDisplay = new Date(tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      Toastify({
+        text: `<strong>Telah Hadir!</strong><br>Nama: ${user.nama}<br>Mata Kuliah: ${mataKuliah}<br>Tanggal: ${tanggalDisplay}`,
+        background: "#10b981",
+        duration: 6000,
+        gravity: "top",
+        position: "center",
+        escapeMarkup: false
+      }).showToast();
+
+      document.getElementById(rfidInputId).value = '';
+      updateAbsenTable(type);
+    }
+
+    // Update Tabel Absen Harian
+    async function updateAbsenTable(type) {
+      const isDosen = type === 'dosen';
+      const upper = isDosen ? 'Dosen' : 'Mahasantri';
+      const tanggal = document.getElementById(`tanggal${isDosen ? 'D' : 'M'}`).value.trim();
+
+      const tbody = document.getElementById(`tbodyAbsen${isDosen ? 'D' : 'M'}`);
+      if (!tbody) return;
+
+      if (!tanggal) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Pilih tanggal terlebih dahulu</td></tr>';
+        return;
+      }
+
+      let data = await getData(`absensi${upper}`);
+      const mataKuliah = document.getElementById(`mataKuliah${isDosen ? 'D' : 'M'}`).value.trim();
+      if (mataKuliah) {
+        data = data.filter(item => item.tanggal === tanggal && item.mataKuliah === mataKuliah);
+      } else {
+        data = data.filter(item => item.tanggal === tanggal);
+      }
+
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada absen hari ini</td></tr>';
+        return;
+      }
+
+      data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      const isAdmin = (JSON.parse(localStorage.getItem('currentUser') || '{}').role || '') === 'admin';
+
+      data.forEach(item => {
+        const waktu = new Date(item.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const aksi = isAdmin ? `<button class="btn btn-sm btn-danger" onclick="alert('Hapus belum aktif di versi Google Sheets')">Hapus</button>` : '';
+
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>${item.mataKuliah || '-'}</td>
+          <td>${item.status}</td>
+          <td>${waktu}</td>
+          <td>${aksi}</td>
+        `;
+      });
+    }
+
+    // Bisyarah Dosen
+    async function hitungBisyarah() {
+      const bulan = document.getElementById('bulanBisyarah').value;
+      const tahun = document.getElementById('tahunBisyarah').value;
+      if (!bulan || !tahun) {
+        document.getElementById('tableBisyarah').innerHTML = '<tr><td colspan="7" class="text-center">Pilih Bulan dan Tahun Hijriah</td></tr>';
+        document.getElementById('totalHarusDibayar').textContent = 'Rp 0';
+        document.getElementById('totalTerbayar').textContent = 'Rp 0';
+        document.getElementById('totalBelumTerbayar').textContent = 'Rp 0';
+        document.getElementById('globalNominalSection').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('globalNominalSection').style.display = 'block';
+      const settings = await getData('settings');
+      const globalNomRecord = settings.find(s => s.key === 'globalNominalHadir');
+      const globalNominal = globalNomRecord ? parseInt(globalNomRecord.value) : 100000;
+      document.getElementById('globalNominalHadir').value = globalNominal;
+
+      const dosenList = await getData('dosen');
+      const tbody = document.getElementById('tableBisyarah');
+      tbody.innerHTML = '';
+      let totalHarusDibayar = 0;
+      let totalTerbayar = 0;
+      let totalBelumTerbayar = 0;
+
+      const isAdmin = JSON.parse(localStorage.getItem('currentUser') || '{}').role === 'admin';
+
+      for (let dosen of dosenList) {
+        const absensiDosen = await getData('absensiDosen');
+        const hadir = absensiDosen.filter(a => a.nama === dosen.nama && a.bulanHijri === bulan && a.tahunHijri === tahun && a.status === 'Hadir').length;
+        const bisyarahHadir = hadir * globalNominal;
+        const tambahan = parseInt(dosen.tambahanBisyarah) || 0;
+        const totalBisyarah = bisyarahHadir + tambahan;
+
+        const bisyarahStatus = await getData('bisyarahStatus');
+        const statusRecord = bisyarahStatus.find(s => s.rfid === dosen.rfid && s.bulanHijri === bulan && s.tahunHijri === tahun);
+        const status = statusRecord ? 'Sudah Dibayar' : 'Belum Dibayar';
+
+        if (status === 'Sudah Dibayar') {
+          totalTerbayar += totalBisyarah;
+        } else {
+          totalBelumTerbayar += totalBisyarah;
+        }
+        totalHarusDibayar += totalBisyarah;
+
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${dosen.nama}</td>
+          <td>${hadir} kali</td>
+          <td>Rp ${bisyarahHadir.toLocaleString('id-ID')}</td>
+          <td>Rp ${tambahan.toLocaleString('id-ID')}</td>
+          <td class="fw-bold">Rp ${totalBisyarah.toLocaleString('id-ID')}</td>
+          <td><span class="badge ${status === 'Sudah Dibayar' ? 'badge-lunas' : 'badge-belum'}">${status}</span></td>
+          <td>${isAdmin ? `<button class="btn btn-sm ${status === 'Sudah Dibayar' ? 'btn-warning' : 'btn-success'}" onclick="toggleStatusBisyarah('${dosen.rfid}', '${bulan}', '${tahun}')">${status === 'Sudah Dibayar' ? 'Tandai Belum' : 'Tandai Sudah'}</button>` : '-'}</td>
+        `;
+      }
+
+      document.getElementById('totalHarusDibayar').textContent = 'Rp ' + totalHarusDibayar.toLocaleString('id-ID');
+      document.getElementById('totalTerbayar').textContent = 'Rp ' + totalTerbayar.toLocaleString('id-ID');
+      document.getElementById('totalBelumTerbayar').textContent = 'Rp ' + totalBelumTerbayar.toLocaleString('id-ID');
+    }
+
+    async function updateGlobalNominal() {
+      const value = parseInt(document.getElementById('globalNominalHadir').value) || 100000;
+      const settings = await getData('settings');
+      const existing = settings.find(s => s.key === 'globalNominalHadir');
+      if (existing) {
+        // Update belum didukung, jadi abaikan atau beri pesan
+        Toastify({ text: "Update global nominal belum didukung di versi ini", background: "#ef4444" }).showToast();
+      } else {
+        await addData('settings', { key: 'globalNominalHadir', value });
+      }
+      hitungBisyarah();
+    }
+
+    async function toggleStatusBisyarah(rfid, bulan, tahun) {
+      const bisyarahStatus = await getData('bisyarahStatus');
+      const existing = bisyarahStatus.find(s => s.rfid === rfid && s.bulanHijri === bulan && s.tahunHijri === tahun);
+      if (existing) {
+        // Delete belum didukung, jadi beri pesan
+        Toastify({ text: "Hapus status belum didukung di versi ini", background: "#ef4444" }).showToast();
+      } else {
+        await addData('bisyarahStatus', { rfid, bulanHijri: bulan, tahunHijri: tahun, status: 'Sudah Dibayar' });
+      }
+      hitungBisyarah();
+    }
+
+    // Cicilan Mahasantri
+    async function loadTableCicilan() {
+      const settings = await getData('settings');
+      const globalTagihanRecord = settings.find(s => s.key === 'globalTagihanSemester');
+      const globalTagihan = globalTagihanRecord ? parseInt(globalTagihanRecord.value) : 3000000;
+      document.getElementById('globalTagihanSemester').value = globalTagihan;
+
+      const mahasantri = await getData('mahasantri');
+      const pembayaran = await getData('pembayaranCicilan');
+      const tbody = document.getElementById('tbodyCicilan');
+      tbody.innerHTML = '';
+
+      for (let m of mahasantri) {
+        const tanggungan = parseInt(m.tanggungan) || 0;
+        const potongan = parseInt(m.potongan) || 0;
+        const totalTagihan = globalTagihan + tanggungan - potongan;
+
+        const payments = pembayaran.filter(p => p.rfid === m.rfid);
+        const cicilan = [0,0,0,0,0,0];
+        let totalBayar = 0;
+        payments.forEach(p => {
+          const ke = parseInt(p.cicilanKe) - 1;
+          if (ke >= 0 && ke < 6) cicilan[ke] += parseInt(p.jumlah);
+          totalBayar += parseInt(p.jumlah);
+        });
+
+        const sisa = totalTagihan - totalBayar;
+        const lunas = sisa <= 0;
+
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${m.nama}</td>
+          <td>${m.nim}</td>
+          <td>${m.kelas}</td>
+          <td contenteditable="true" class="text-end" data-rfid="${m.rfid}" data-field="tanggungan">${tanggungan.toLocaleString('id-ID')}</td>
+          <td contenteditable="true" class="text-end" data-rfid="${m.rfid}" data-field="potongan">${potongan.toLocaleString('id-ID')}</td>
+          <td class="fw-bold">Rp ${totalTagihan.toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[0].toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[1].toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[2].toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[3].toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[4].toLocaleString('id-ID')}</td>
+          <td>Rp ${cicilan[5].toLocaleString('id-ID')}</td>
+          <td>Rp ${totalBayar.toLocaleString('id-ID')}</td>
+          <td class="${lunas ? 'text-success' : 'text-danger'} fw-bold">Rp ${sisa.toLocaleString('id-ID')}</td>
+          <td><span class="badge ${lunas ? 'badge-lunas' : 'badge-belum'}">${lunas ? 'Lunas' : 'Belum'}</span></td>
+          <td>
+            <button class="btn btn-emerald btn-sm me-1" onclick="openModalBayar('${m.rfid}', '${m.nama}')">Bayar</button>
+            <button class="btn btn-outline-light btn-sm" onclick="cetakKuitansiAll('${m.rfid}')">Kuitansi</button>
+          </td>
+        `;
+      }
+
+      // Live search
+      document.getElementById('searchMahasantri').oninput = () => {
+        const query = document.getElementById('searchMahasantri').value.toLowerCase();
+        document.querySelectorAll('#tbodyCicilan tr').forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+        });
+      };
+    }
+
+    async function updateGlobalTagihan() {
+      const value = parseInt(document.getElementById('globalTagihanSemester').value) || 3000000;
+      const settings = await getData('settings');
+      const existing = settings.find(s => s.key === 'globalTagihanSemester');
+      if (existing) {
+        Toastify({ text: "Update global tagihan belum didukung di versi ini", background: "#ef4444" }).showToast();
+      } else {
+        await addData('settings', { key: 'globalTagihanSemester', value });
+      }
+      loadTableCicilan();
+    }
+
+    let currentRfid = '';
+    function openModalBayar(rfid, nama) {
+      currentRfid = rfid;
+      document.getElementById('modalNama').textContent = nama;
+      document.getElementById('modalTanggal').value = new Date().toISOString().split('T')[0];
+      new bootstrap.Modal(document.getElementById('modalBayar')).show();
+    }
+
+    async function simpanCicilan() {
+      const cicilanKe = parseInt(document.getElementById('modalCicilanKe').value);
+      const jumlah = parseInt(document.getElementById('modalJumlah').value);
+      const tanggal = document.getElementById('modalTanggal').value;
+      const keterangan = document.getElementById('modalKeterangan').value.trim();
+
+      if (!jumlah || jumlah <= 0) {
+        Toastify({ text: "Masukkan jumlah valid!", background: "#ef4444" }).showToast();
+        return;
+      }
+
+      await addData('pembayaranCicilan', {
+        rfid: currentRfid,
+        cicilanKe,
+        jumlah,
+        tanggal,
+        keterangan,
+        timestamp: Date.now()
+      });
+
+      bootstrap.Modal.getInstance(document.getElementById('modalBayar')).hide();
+      loadTableCicilan();
+      Toastify({ text: "Cicilan disimpan!", background: "#10b981" }).showToast();
+    }
+
+    // Terbilang (tetap sama)
+    function terbilang(angka) {
+      const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+      if (angka < 12) return satuan[angka];
+      if (angka < 20) return satuan[angka - 10] + " Belas";
+      if (angka < 100) return satuan[Math.floor(angka / 10)] + " Puluh" + (angka % 10 ? " " + terbilang(angka % 10) : "");
+      if (angka < 200) return "Seratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+      if (angka < 1000) return satuan[Math.floor(angka / 100)] + " Ratus" + (angka % 100 ? " " + terbilang(angka % 100) : "");
+      if (angka < 2000) return "Seribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+      if (angka < 1000000) return terbilang(Math.floor(angka / 1000)) + " Ribu" + (angka % 1000 ? " " + terbilang(angka % 1000) : "");
+      if (angka < 1000000000) return terbilang(Math.floor(angka / 1000000)) + " Juta" + (angka % 1000000 ? " " + terbilang(angka % 1000000) : "");
+      return "Angka terlalu besar";
+    }
+
+    async function cetakKuitansiAll(rfid) {
+      const m = (await getData('mahasantri')).find(s => s.rfid === rfid);
+      const payments = (await getData('pembayaranCicilan')).filter(p => p.rfid === rfid).sort((a, b) => a.timestamp - b.timestamp);
+      const settings = await getData('settings');
+      const globalTagihan = settings.find(s => s.key === 'globalTagihanSemester') ? parseInt(settings.find(s => s.key === 'globalTagihanSemester').value) : 3000000;
+      const totalTagihan = globalTagihan + (parseInt(m.tanggungan) || 0) - (parseInt(m.potongan) || 0);
+      const totalBayar = payments.reduce((sum, p) => sum + parseInt(p.jumlah), 0);
+      const sisa = totalTagihan - totalBayar;
+      const lunas = sisa <= 0;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(20);
+      doc.text("KUITANSI PEMBAYARAN CICILAN", 105, 30, { align: 'center' });
+      doc.setFontSize(16);
+      doc.text("Ma'had Aly", 105, 40, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Nama: ${m.nama}`, 20, 60);
+      doc.text(`NIM: ${m.nim}`, 20, 70);
+      doc.text(`Kelas: ${m.kelas}`, 20, 80);
+      doc.text(`Total Tagihan Semester: Rp ${totalTagihan.toLocaleString('id-ID')}`, 20, 90);
+      doc.text(`Total Sudah Dibayar: Rp ${totalBayar.toLocaleString('id-ID')}`, 20, 100);
+      doc.text(`Sisa Tagihan: Rp ${sisa.toLocaleString('id-ID')}`, 20, 110);
+      let y = 130;
+      doc.text("Riwayat Cicilan:", 20, y);
+      y += 10;
+      payments.forEach((p, i) => {
+        doc.text(`${i+1}. Cicilan ${p.cicilanKe} - Rp ${p.jumlah.toLocaleString('id-ID')} (${new Date(p.tanggal).toLocaleDateString('id-ID')})`, 30, y);
+        y += 8;
+      });
+      if (lunas) {
+        doc.setFontSize(30);
+        doc.setTextColor(16, 185, 129);
+        doc.text("L U N A S", 105, y + 20, { align: 'center' });
+      }
+      doc.save(`kuitansi_${m.nim}_semua.pdf`);
+    }
+
+    // Manajemen Data Master
+    let currentMasterTab = 'mahasantri';
+
+    function showMasterTab(tab) {
+      currentMasterTab = tab;
+      document.querySelectorAll('#master > div[id^="tab-"]').forEach(d => d.style.display = 'none');
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+      document.querySelectorAll('#master .nav-link').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}-btn`).classList.add('active');
+      loadMasterData(tab);
+    }
+
+    async function loadMasterData(tab) {
+      const data = await getData(tab);
+      const tbodyId = 'tbody' + tab.charAt(0).toUpperCase() + tab.slice(1);
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = '';
+
+      data.forEach(item => {
+        const row = tbody.insertRow();
+        if (tab === 'mahasantri') {
+          row.innerHTML = `
+            <td>${item.nama}</td>
+            <td>${item.nim}</td>
+            <td>${item.rfid}</td>
+            <td>${item.kelas}</td>
+            <td>Rp ${(item.tanggungan || 0).toLocaleString('id-ID')}</td>
+            <td>Rp ${(item.potongan || 0).toLocaleString('id-ID')}</td>
+            <td>
+              <button class="btn btn-sm btn-warning me-1" onclick="alert('Edit belum aktif di versi Google Sheets')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="alert('Hapus belum aktif di versi Google Sheets')">Hapus</button>
+            </td>
+          `;
+        } else if (tab === 'dosen') {
+          row.innerHTML = `
+            <td>${item.nama}</td>
+            <td>${item.nidn}</td>
+            <td>${item.rfid}</td>
+            <td>Rp ${(item.tambahanBisyarah || 0).toLocaleString('id-ID')}</td>
+            <td>
+              <button class="btn btn-sm btn-warning me-1" onclick="alert('Edit belum aktif')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="alert('Hapus belum aktif')">Hapus</button>
+            </td>
+          `;
+        } else if (tab === 'kelas') {
+          row.innerHTML = `
+            <td>${item.kelas}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="alert('Hapus belum aktif')">Hapus</button>
+            </td>
+          `;
+        } else if (tab === 'matkul') {
+          row.innerHTML = `
+            <td>${item.nama}</td>
+            <td>${item.kelas}</td>
+            <td>
+              <button class="btn btn-sm btn-warning me-1" onclick="alert('Edit belum aktif')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="alert('Hapus belum aktif')">Hapus</button>
+            </td>
+          `;
+        }
+      });
+    }
+
+    // Backup & Restore (download JSON dari Google Sheets)
+    async function backupDatabase() {
+      const tables = ['users', 'kelas', 'mataKuliah', 'mahasantri', 'dosen', 'absensiMahasantri', 'absensiDosen', 'pembayaranCicilan', 'settings', 'bisyarahStatus'];
+      const backup = {};
+      for (let table of tables) {
+        backup[table] = await getData(table);
+      }
+      const json = JSON.stringify(backup, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_mahadaly_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      Toastify({ text: "Backup berhasil di-download!", background: "#10b981" }).showToast();
+    }
+
+    function restoreDatabase(file) {
+      if (!file) return;
+      if (!confirm('Restore akan menimpa data saat ini di Google Sheets. Yakin lanjutkan? (Fitur ini belum aktif full)')) return;
+      Toastify({ text: "Restore dari file belum aktif di versi ini", background: "#ef4444" }).showToast();
+    }
+
+    // Inisialisasi saat load
+    window.onload = () => {
+      const saved = localStorage.getItem('currentUser');
+      if (saved) {
+        const user = JSON.parse(saved);
+        loadDashboard(user);
+      }
+      refreshAllData();
+    };
+  </script>
+</body>
+</html>
